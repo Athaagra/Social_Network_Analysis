@@ -1,0 +1,263 @@
+E-pinions :
+Number of nodes:75879
+Number of edges:508837
+Average degree (in-out):6.7059
+Average degree:13.411
+Average degree (Und): 10.6944
+clustering coefficients :0.13775637339245675
+
+BFS--------------------------
+---------------6%---------------------------------
+Number of seed: 100 
+Number of crawled: 4643 6.12 
+Number of nodes: 43727 57.63 
+Number of edges: 430225 84.55 
+Average degree (Out-in) : 9.838886729023258 
+Average degree  : 19.677773458046516 6.27 
+Average degree(Und) : 15.636791913463078 
+Average clustering coefficients: 0.14412803738224145 0.0064 
+Density of the graph: 0.0002250122748255788 
+Time: 27.085246324539185 
+
+Number of seed: 100 
+Number of crawled: 4643 6.12 
+Number of nodes: 43823 57.75 
+Number of edges: 432631 85.02 
+Average degree (Out-in) : 9.872236040435387 
+Average degree  : 19.744472080870775 6.33 
+Average degree(Und) : 15.678753166145631 
+Average clustering coefficients: 0.1462018373173038 0.0084 
+Density of the graph: 0.00022528036238499813 
+Time: 29.28543972969055 
+
+
+Number of seed: 100 
+Number of crawled: 4643 6.12 
+Number of nodes: 43604 57.47 
+Number of edges: 430738 84.65 
+Average degree (Out-in) : 9.878405650857719 
+Average degree  : 19.756811301715437 6.35 
+Average degree(Und) : 15.705898541418218 
+Average clustering coefficients: 0.145593966873665 0.0078 
+Density of the graph: 0.00022655334841313027 
+Time: 27.696407556533813 
+--------------------10%----------------------------------
+Number of seed: 100 
+Number of crawled: 7588 10.00 
+Number of nodes: 44873 59.14 
+Number of edges: 441993 86.86 
+Average degree (Out-in) : 9.849865175049585 
+Average degree  : 19.69973035009917 6.29 
+Average degree(Und) : 15.586031689434627 
+Average clustering coefficients: 0.15079003474396588 0.0130 
+Density of the graph: 0.00021951027756840757 
+Time: 44.055185317993164 
+
+
+Number of seed: 100 
+Number of crawled: 7588 10.00 
+Number of nodes: 45122 59.47 
+Number of edges: 444064 87.27 
+Average degree (Out-in) : 9.84140773901866 
+Average degree  : 19.68281547803732 6.27 
+Average degree(Und) : 15.562430743318115 
+Average clustering coefficients: 0.15106229583299707 0.0133 
+Density of the graph: 0.00021811147224172028 
+Time: 45.307239055633545 
+
+Number of seed: 100 
+Number of crawled: 7588 10.00 
+Number of nodes: 45005 59.31 
+Number of edges: 443404 87.14 
+Average degree (Out-in) : 9.852327519164538 
+Average degree  : 19.704655038329076 6.29 
+Average degree(Und) : 15.586712587490279 
+Average clustering coefficients: 0.15249666004791107 0.0147 
+Density of the graph: 0.00021892115187904492 
+Time: 44.98409295082092 
+
+
+
+--------------------15%----------------------------------
+Number of seed: 100 
+Number of crawled: 11381 15.00 
+Number of nodes: 45801 60.36 
+Number of edges: 450750 88.58 
+Average degree (Out-in) : 9.841488177114037 
+Average degree  : 19.682976354228074 6.27 
+Average degree(Und) : 15.514595751184473 
+Average clustering coefficients: 0.1579971950071306 0.0202 
+Density of the graph: 0.00021487965452214055 
+Time: 61.46182894706726 
+
+Number of seed: 100 
+Number of crawled: 11381 15.00 
+Number of nodes: 45867 60.45 
+Number of edges: 451136 88.66 
+Average degree (Out-in) : 9.835742472801796 
+Average degree  : 19.67148494560359 6.26 
+Average degree(Und) : 15.506355331719973 
+Average clustering coefficients: 0.15721972595873754 0.0195 
+Density of the graph: 0.00021444517666249066 
+Time: 60.886943101882935 
+
+Number of seed: 100 
+Number of crawled: 11381 15.00 
+Number of nodes: 45842 60.41 
+Number of edges: 450764 88.59 
+Average degree (Out-in) : 9.832991579774006 
+Average degree  : 19.665983159548013 6.25 
+Average degree(Und) : 15.50569346887134 
+Average clustering coefficients: 0.15747400076941412 0.0197 
+Density of the graph: 0.00021450211774991834 
+Time: 60.28257203102112 
+
+---------------------20%-------------------------
+
+Number of seed: 100 
+Number of crawled: 15176 20.00 
+Number of nodes: 46354 61.09 
+Number of edges: 455472 89.51 
+Average degree (Out-in) : 9.825948138240497 
+Average degree  : 19.651896276480993 6.24 
+Average degree(Und) : 15.46580661863054 
+Average clustering coefficients: 0.1615416771055495 0.0238 
+Density of the graph: 0.00021198084564624721 
+Time: 71.82636904716492
+
+Number of seed: 100 
+Number of crawled: 15176 20.00 
+Number of nodes: 46411 61.16 
+Number of edges: 455784 89.57 
+Average degree (Out-in) : 9.820602874318588 
+Average degree  : 19.641205748637176 6.23 
+Average degree(Und) : 15.449053026222233 
+Average clustering coefficients: 0.16125486648861015 0.0235 
+Density of the graph: 0.00021160531942078406 
+Time: 76.55834698677063 
+
+Number of seed: 100 
+Number of crawled: 15176 20.00 
+Number of nodes: 46450 61.22 
+Number of edges: 455821 89.58 
+Average degree (Out-in) : 9.813153928955867 
+Average degree  : 19.626307857911733 6.21 
+Average degree(Und) : 15.447147470398278 
+Average clustering coefficients: 0.1618594078330305 0.0241 
+Density of the graph: 0.00021126728086623753 
+Time: 72.79659581184387 
+
+----------------------27%---------------------
+Number of seed: 100 
+Number of crawled: 21176 27.91 
+Number of nodes: 46839 61.73 
+Number of edges: 460125 90.43 
+Average degree (Out-in) : 9.823544482162301 
+Average degree  : 19.647088964324603 6.24 
+Average degree(Und) : 15.425222570934478 
+Average clustering coefficients: 0.16782266566689477 0.0301 
+Density of the graph: 0.00020973449938430975 
+Time: 91.73877120018005 
+ 
+Number of seed: 100 
+Number of crawled: 21176 27.91 
+Number of nodes: 46894 61.80 
+Number of edges: 459939 90.39 
+Average degree (Out-in) : 9.808056467778394 
+Average degree  : 19.61611293555679 6.20 
+Average degree(Und) : 15.398089307800571 
+Average clustering coefficients: 0.166810815870247 0.0291 
+Density of the graph: 0.00020915822122232302 
+Time: 89.06944179534912 
+
+Number of seed: 100 
+Number of crawled: 21176 27.91 
+Number of nodes: 46830 61.72 
+Number of edges: 459585 90.32 
+Average degree (Out-in) : 9.81390134529148 
+Average degree  : 19.62780269058296 6.22 
+Average degree(Und) : 15.410847747170617 
+Average clustering coefficients: 0.16685302457770762 0.0291 
+Density of the graph: 0.0002095688856326524 
+Time: 87.66056084632874 
+
+------------------54%------------------
+
+Number of seed: 100 
+Number of crawled: 41176 54.27 
+Number of nodes: 47580 62.71 
+Number of edges: 466444 91.67 
+Average degree (Out-in) : 9.803362757461118 
+Average degree  : 19.606725514922235 6.19 
+Average degree(Und) : 15.336485918453132 
+Average clustering coefficients: 0.1782941653437963 0.0405 
+Density of the graph: 0.00020604390082727922 
+Time: 146.9617280960083 
+
+Number of seed: 100 
+Number of crawled: 41176 54.27 
+Number of nodes: 47580 62.71 
+Number of edges: 466326 91.65 
+Average degree (Out-in) : 9.800882723833544 
+Average degree  : 19.601765447667088 6.19 
+Average degree(Und) : 15.332786885245902 
+Average clustering coefficients: 0.17795181326062076 0.0402 
+Density of the graph: 0.00020599177628435956 
+Time: 170.68532943725586 
+
+Number of seed: 100 
+Number of crawled: 41176 54.27 
+Number of nodes: 47558 62.68 
+Number of edges: 466240 91.63 
+Average degree (Out-in) : 9.803608225745405 
+Average degree  : 19.60721645149081 6.20 
+Average degree(Und) : 15.33823962319694 
+Average clustering coefficients: 0.1778784544270402 0.0401 
+Density of the graph: 0.00020614437886631634 
+Time: 181.90539836883545 
+
+----------------80%------------------------------
+Number of seed: 100 
+Number of crawled: 61176 80.62 
+Number of nodes: 47727 62.90 
+Number of edges: 467540 91.88 
+Average degree (Out-in) : 9.796132168374296 
+Average degree  : 19.592264336748592 6.18 
+Average degree(Und) : 15.314559892723196 
+Average clustering coefficients: 0.18138746594723015 0.0436 
+Density of the graph: 0.00020525776659209436 
+Time: -121.72605204582214 
+
+Number of seed: 100 
+Number of crawled: 61176 80.62 
+Number of nodes: 47730 62.90 
+Number of edges: 467545 91.89 
+Average degree (Out-in) : 9.795621202597946 
+Average degree  : 19.591242405195892 6.18 
+Average degree(Und) : 15.313848732453383 
+Average clustering coefficients: 0.18146425119825588 0.0437 
+Density of the graph: 0.00020523415958008647 
+Time: 253.76141119003296 
+ 
+Number of seed: 100 
+Number of crawled: 61176 80.62 
+Number of nodes: 47716 62.88 
+Number of edges: 467522 91.88 
+Average degree (Out-in) : 9.798013245033113 
+Average degree  : 19.596026490066226 6.18 
+Average degree(Und) : 15.3174616480845 
+Average clustering coefficients: 0.18147219885738003 0.0437 
+Density of the graph: 0.00020534450896014068 
+Time: 226.08463072776794 
+
+
+
+
+
+
+
+
+
+
+
+
