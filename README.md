@@ -1,2 +1,2 @@
 # Social_Network_Analysis
-<embed src="Analysis__Betweenness_Centrality.pdf" type="application/pdf">
+![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
