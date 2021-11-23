@@ -59,7 +59,12 @@ import seaborn as sns
 #sigma=np.std(ROne)
 #Genre=Genre
 #Genre=[str(i) for i in Genre]
-
+def precision(clusterr,kmean_labelss):
+    countss=0
+    for label in range(len(cluster)):
+        if clusterr[label][1]==kmean_labelss[label]:
+            countss+=1
+    print('Precision {}'.format(countss/len(cluster)))   
 
 def CondiInd(dataSE,GaE,GenreE,distinctCatE):
     ClO=[]
@@ -145,6 +150,8 @@ likelihood=[]
 cluster=[]
 iteration=0
 while iteration <23:
+    precision(kmeans.labes,cluster)
+    CondiInd(dataS, Ga, Genre, distinctCat)
     count=0
     iteration+=1
     for i in rO:
@@ -185,11 +192,7 @@ while iteration <23:
 print(gamma)
 
 
-countss=0
-for label in range(len(cluster)):
-    if cluster[label][1]==kmean_labels[label]:
-        countss+=1
-print('Precision {}'.format(countss/len(cluster)))    
+ 
         
 rra = np.arange(0,len(rO))
 plt.figure(figsize=(18, 18))  
@@ -205,20 +208,20 @@ plotting=np.array(densityFunction)
 
 
 #both distribution in one diagram
-plt.loglog(plotting[:,1], 'g',marker='o',label='likelihood')
-plt.grid(True,which="both",ls="--",c='gray')
+#plt.loglog(plotting[:,1], 'g',marker='o',label='likelihood')
+#plt.grid(True,which="both",ls="--",c='gray')
 #plt.loglog(odegreesequence,'r',marker='<',label='OutDegree')
 #title of diagram
-plt.title("Density function")
+#plt.title("Density function")
 #label y title
-plt.ylabel("nodes")
+#plt.ylabel("nodes")
 #label x title
-plt.xlabel("degree")
+#plt.xlabel("degree")
 #save the figure
-plt.savefig("DensityFunction.png")
+#plt.savefig("DensityFunction.png")
 #display the figure
-plt.legend(loc="upper right")
-plt.show()
+#plt.legend(loc="upper right")
+#plt.show()
 
 ClO=[]
 ClT=[]
