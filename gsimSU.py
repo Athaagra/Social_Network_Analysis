@@ -247,7 +247,7 @@ while iteration <23:
     cluster=np.array(cluster)
     cluEm=cluster[:,1]
     CondiInd(dataS,Ga,cluEm,distinctCat)
-	print('Iteration {},precsion,CI E-m Supervised'.format(iteration))
+    print('Iteration {},precsion,CI E-m Supervised'.format(iteration))
     similar(Results,kmean_labels)
     result=np.array(Results)
     resuEm=result[:,1]
