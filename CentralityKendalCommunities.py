@@ -20,14 +20,12 @@ import numpy as np
 # Import required libraries
 from scipy.stats import kendalltau
 
-fileS = pd.read_csv('giant_componentnSmall2022.csv',sep='\t')
-
-#fileS = open('giant_componentnSmall2022.csv','rb')
+#fileL = open('twitter-larger.tsv','rb')
+fileS = open('twitter_smallT.csv','rb')
 #read from file file
-
-#fileS.close()
-titles=list(fileS.columns)
-G = nx.from_pandas_edgelist(fileS,titles[0],titles[1],[titles[2],titles[3]])
+Gs=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
+#fianlly close the inputs stream
+fileS.close()
 
 
 #find betweeness centrality
@@ -135,7 +133,14 @@ corricoc, _ = kendalltau(dataicA, dataocA)
 
 print('Kendall Rank correlation: bec-clc {} clc-inc{} clc-ouc {} bec-inc {} bec-ouc {} inc-outc {}' .format(corrccbc,corrccic,corrccoc,corrbcic,corrbcoc,corricoc), file=open('CorrelationCentralitites.txt','w'))
 
+fileS = pd.read_csv('giant_componentnSmall2022.csv',sep='\t')
 
+#fileS = open('giant_componentnSmall2022.csv','rb')
+#read from file file
+
+#fileS.close()
+titles=list(fileS.columns)
+G = nx.from_pandas_edgelist(fileS,titles[0],titles[1],[titles[2],titles[3]])
 
 
 NumberOfNodes = G.number_of_nodes()
