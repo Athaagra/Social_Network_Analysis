@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import random
 
-n=20
+n=5000
 p=0.8
 random.seed(0)
 
