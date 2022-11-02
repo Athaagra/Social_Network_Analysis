@@ -23,36 +23,11 @@ p=0.8
 random.seed(0)
 
 G=nx.erdos_renyi_graph(n, p, seed=0, directed=True)
-NumberOfNodes = G.number_of_nodes()
-NumberOfEdges = G.number_of_edges()
-print('Number of nodes {} Number of edges {}'.format(NumberOfNodes,NumberOfEdges))
-#calculate the strongly components
-Strong = nx.number_strongly_connected_components(G)
-#calculate the weakly components
-Weak = nx.number_weakly_connected_components(G)
-print('Number of Strong components {} Number of Weakly Components {}'.format(Strong,Weak))
-
 #calculate the subgraph of strong components
 StrongComponent = list(nx.strongly_connected_components(G))
 LargestStrong = max(StrongComponent, key=len)
 WeaklyComponent = list(nx.weakly_connected_components(G))
 largestWeakly = max(WeaklyComponent, key=len)
-
-#finding the degree
-GU=G.to_undirected()
-
-#clustring coefficients
-AverageClustering = nx.average_clustering(GU)
-print("This is AC:{}".format(AverageClustering))
-print("This is info:{}".format(nx.info(G)))
-print("This is Density:{}".format(nx.density(G)))
-print("This is the diameter {}".format(nx.diameter(G)))
-degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
-print(degreeS[0])
-print(degreeS[-1])
-dg=np.array(degreeS)
-AverageDegree=np.mean(dg[:,1])
-print(AverageDegree)
 
 lar = []
 ve = []
@@ -93,6 +68,41 @@ for line in lar:
     print(line)
     writer.writerow(line)
 f.close()
+
+fileS = open('LargestComponent2022.csv','rb')
+#read from file file
+Gs=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph())
+#fianlly close the inputs stream
+fileS.close()
+
+
+NumberOfNodes = G.number_of_nodes()
+NumberOfEdges = G.number_of_edges()
+print('Number of nodes {} Number of edges {}'.format(NumberOfNodes,NumberOfEdges))
+#calculate the strongly components
+Strong = nx.number_strongly_connected_components(G)
+#calculate the weakly components
+Weak = nx.number_weakly_connected_components(G)
+print('Number of Strong components {} Number of Weakly Components {}'.format(Strong,Weak))
+
+
+
+#finding the degree
+GU=G.to_undirected()
+
+#clustring coefficients
+AverageClustering = nx.average_clustering(GU)
+print("This is AC:{}".format(AverageClustering))
+print("This is info:{}".format(nx.info(G)))
+print("This is Density:{}".format(nx.density(G)))
+print("This is the diameter {}".format(nx.diameter(G)))
+degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
+print(degreeS[0])
+print(degreeS[-1])
+dg=np.array(degreeS)
+AverageDegree=np.mean(dg[:,1])
+print(AverageDegree)
+
 
 
 
