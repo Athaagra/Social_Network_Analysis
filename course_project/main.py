@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import random
 
-n=5000
+n=20
 p=0.8
 random.seed(0)
 
@@ -46,3 +46,10 @@ AverageClustering = nx.average_clustering(GU)
 print("This is AC:{}".format(AverageClustering))
 print("This is info:{}".format(nx.info(G)))
 print("This is Density:{}".format(nx.density(G)))
+print("This is the diameter {}".format(nx.diameter(G)))
+degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
+print(degreeS[0])
+print(degreeS[-1])
+dg=np.array(degreeS)
+AverageDegree=np.mean(dg[:,1])
+print(AverageDegree)
