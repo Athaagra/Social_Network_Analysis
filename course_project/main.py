@@ -1,6 +1,6 @@
 import networkx as nx
 import random
-
+import math
 import networkx as nx
 import networkx.algorithms.community as nx_comm
 from networkx.algorithms.community import greedy_modularity_communities
@@ -76,7 +76,7 @@ fileS.close()
 
 NumberOfNodesC = G.number_of_nodes()
 NumberOfEdgesC = G.number_of_edges()
-print('Number of nodes {} Number of edges {}'.format(NumberOfNodes,NumberOfEdges))
+print('Number of nodes {} Number of edges {}'.format(NumberOfNodesC,NumberOfEdgesC))
 #calculate the strongly components
 Strong = nx.number_strongly_connected_components(G)
 #calculate the weakly components
@@ -93,7 +93,13 @@ AverageClustering = nx.average_clustering(GU)
 #print("This is AC:{}".format(AverageClustering))
 #print("This is info:{}".format(nx.info(G)))
 density=nx.density(G)
-diameter=nx.diameter(GU)
+if nx.is_connected(G):
+	diameter=nx.diameter(G)
+else:
+	subgraphs=nx.connected_component_subgraphs(G)
+	subgraphs=[sbg for sbg in subgraps if len(sbg)>1]
+	diameter=np.sum(nx.average_shortest_path_length(sg) for sg in subgraphs)/len(subgraphs)
+diameter=nx.diameter(G)
 degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
 print(degreeS[0])
 print(degreeS[-1])
