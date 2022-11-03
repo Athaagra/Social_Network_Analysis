@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 14 21:27:02 2022
-
-@author: Optimus
-"""
+import networkx as nx
+import random
 
 import networkx as nx
 import networkx.algorithms.community as nx_comm
@@ -18,9 +13,10 @@ import pandas as pd
 import numpy as np
 import random
 
-n=20
+n=5000
 p=0.8
 random.seed(0)
+
 
 G=nx.erdos_renyi_graph(n, p, seed=0, directed=True)
 #calculate the subgraph of strong components
@@ -58,9 +54,11 @@ for u in largestWeakly:
         #ve1 = list(ve1.values())
         lar.append([u,neighv])
         j=j+1
+Nodes=G.number_of_nodes()
+Edges=G.number_of_edges()
 import csv
 # create a csv with giant component
-f = open('LargestComponent2022.csv', 'w', encoding='utf-8')
+f = open('LargestComponent2022ErdosRenyi.csv', 'w', encoding='utf-8')
 f.write('Source \t Target\n')
 writer = csv.writer(f, delimiter='\t',
                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -69,15 +67,15 @@ for line in lar:
     writer.writerow(line)
 f.close()
 
-fileS = open('LargestComponent2022.csv','rb')
+fileS = open('LargestComponent2022ErdosRenyi.csv','rb')
 #read from file file
-Gs=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph())
+G=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph())
 #fianlly close the inputs stream
 fileS.close()
 
 
-NumberOfNodes = G.number_of_nodes()
-NumberOfEdges = G.number_of_edges()
+NumberOfNodesC = G.number_of_nodes()
+NumberOfEdgesC = G.number_of_edges()
 print('Number of nodes {} Number of edges {}'.format(NumberOfNodes,NumberOfEdges))
 #calculate the strongly components
 Strong = nx.number_strongly_connected_components(G)
@@ -92,18 +90,15 @@ GU=G.to_undirected()
 
 #clustring coefficients
 AverageClustering = nx.average_clustering(GU)
-print("This is AC:{}".format(AverageClustering))
-print("This is info:{}".format(nx.info(G)))
-print("This is Density:{}".format(nx.density(G)))
-print("This is the diameter {}".format(nx.diameter(G)))
+#print("This is AC:{}".format(AverageClustering))
+#print("This is info:{}".format(nx.info(G)))
+density=nx.density(G)
+diameter=nx.diameter(GU)
 degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
 print(degreeS[0])
 print(degreeS[-1])
 dg=np.array(degreeS)
 AverageDegree=np.mean(dg[:,1])
-print(AverageDegree)
-
-
-
-
+print(density,file=open('density.txt','w'))
+print("density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC),file=open('info.txt','w'))
 
