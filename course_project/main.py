@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Nov  4 03:27:58 2022
+
+@author: Optimus
+"""
+
 import networkx as nx
 import random
 import math
@@ -93,18 +101,31 @@ AverageClustering = nx.average_clustering(GU)
 #print("This is AC:{}".format(AverageClustering))
 #print("This is info:{}".format(nx.info(G)))
 density=nx.density(G)
-if nx.is_connected(G):
-	diameter=nx.diameter(G)
+if nx.is_connected(GU):
+    print('True')
 else:
-	subgraphs=nx.connected_component_subgraphs(G)
-	subgraphs=[sbg for sbg in subgraps if len(sbg)>1]
-	diameter=np.sum(nx.average_shortest_path_length(sg) for sg in subgraphs)/len(subgraphs)
-diameter=nx.diameter(G)
+    lp=[]
+    subgraphs=nx.connected_components(GU)
+    subgraphs=[sbg for sbg in subgraphs if len(sbg)>1]
+    for n in range(1,len(subgraphs)):
+        for node in subgraphs[n]: 
+            lp.append(nx.single_source_shortest_path_length(GU,node).values())
+    lps=[]
+    for t in range(len(lp)):
+        x=[i for i in lp[t]]
+        lps.append(x[-1])
+    diameter=np.mean(lps)
+#	
+#	subgraphs=[sbg for sbg in subgraphs if len(sbg)>1]#
+#	for g in subgraphs:
+#        print(g)
+    #diameter=np.sum(nx.average_shortest_path_length(sg) for sg in subgraphs)/len(subgraphs)
+#diameter=nx.diameter(G)
 degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
 print(degreeS[0])
 print(degreeS[-1])
 dg=np.array(degreeS)
-AverageDegree=np.mean(dg[:,1])
-print(density,file=open('density.txt','w'))
+dg=dg[:,1].astype(float)
+AverageDegree=np.mean(dg)
+#print(density,file=open('density.txt','w'))
 print("density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC),file=open('info.txt','w'))
-
