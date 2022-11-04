@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Nov  4 03:27:58 2022
-
 @author: Optimus
 """
 
@@ -133,4 +132,4 @@ dg=np.array(degreeS)
 dg=dg[:,1].astype(float)
 AverageDegree=np.mean(dg)
 #print(density,file=open('density.txt','w'))
-print("density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC),file=open('info.txt','w'))
+print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(AverageClustering,density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC),file=open('info.txt','w'))
