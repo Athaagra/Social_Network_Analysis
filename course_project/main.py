@@ -24,7 +24,12 @@ import random
 n=5000
 p=0.8
 random.seed(0)
-
+#fileL = open('twitter-larger.tsv','rb')
+##fileS = open('twitter_smallT.csv','rb')
+#read from file file
+##Gs=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
+#fianlly close the inputs stream
+##fileS.close()
 
 G=nx.erdos_renyi_graph(n, p, seed=0, directed=True)
 #calculate the subgraph of strong components
