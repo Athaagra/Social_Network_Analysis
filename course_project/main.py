@@ -20,7 +20,8 @@ import pandas as pd
 import numpy as np
 import random
 
-n=5000
+
+n=50
 p=0.8
 random.seed(0)
 #fileL = open('twitter-larger.tsv','rb')
@@ -133,3 +134,115 @@ dg=dg[:,1].astype(float)
 AverageDegree=np.mean(dg)
 #print(density,file=open('density.txt','w'))
 print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(AverageClustering,density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC),file=open('info.txt','w'))
+
+def perturbation(graph, p):
+    g = graph.copy()
+    edges_to_remove = int(len(g.edges()) * p)
+    
+    removed_edges = []
+    for i in range(edges_to_remove):
+        random_edge = random.choice(list(g.edges()))
+        g.remove_edges_from([random_edge])
+        removed_edges.append(random_edge)
+
+    while(edges_to_remove > 0):
+        first_node = random.choice(list(g.nodes()))
+        second_node = random.choice(list(g.nodes()))
+        if(second_node == first_node):
+            continue
+        if g.has_edge(first_node, second_node) or (first_node, second_node) in removed_edges or (second_node, first_node) in removed_edges:
+            continue
+        else:
+            g.add_edge(first_node, second_node)
+            edges_to_remove -= 1
+    
+    return g
+
+measures = {}
+for pert in [0.05]:#, .05, .1, .2, .5, 1]:
+    print('  perturbation ({:.0%} of edges)...'.format(pert))
+    pert_graph = perturbation(G, pert)
+    
+G=pert_graph
+#finding the degree
+GU=G.to_undirected()
+#clustring coefficients
+AverageClusteringPert = nx.average_clustering(GU)
+densityPert=nx.density(G)
+if nx.is_connected(GU):
+    diameterPert=nx.diameter(G)
+else:
+    lp=[]
+    subgraphs=nx.connected_components(GU)
+    subgraphs=[sbg for sbg in subgraphs if len(sbg)>1]
+    for n in range(1,len(subgraphs)):
+        for node in subgraphs[n]: 
+            lp.append(nx.single_source_shortest_path_length(GU,node).values())
+    lps=[]
+    for t in range(len(lp)):
+        x=[i for i in lp[t]]
+        lps.append(x[-1])
+    diameterPert=np.mean(lps)
+degreeS=sorted(G.degree, key=lambda x: x[1], reverse=True)
+print(degreeS[0])
+print(degreeS[-1])
+dg=np.array(degreeS)
+dg=dg[:,1].astype(float)
+AverageDegreePert=np.mean(dg)
+NumberOfNodesPert = G.number_of_nodes()
+NumberOfEdgesPert = G.number_of_edges()
+print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(AverageClusteringPert,densityPert,diameterPert,AverageDegreePert,Nodes,Edges,NumberOfNodesPert,NumberOfEdgesPert),file=open('infoPert.txt','w'))
+
+def eq_class(facts: dict):
+    eq_class = {}
+    for key, degrees in facts.items():
+        k = tuple(sorted(degrees))
+        
+        if k not in eq_class:
+            eq_class[k] = [] # Initialize the value field for that empty key
+        
+        eq_class[k].append(key)
+
+    return eq_class
+
+
+def deanonymize(facts, query_name):
+    eq = eq_class(facts).values()
+
+    f = lambda vals, minv, maxv: [len(v) for v in vals if len(v) >= minv and len(v) <= maxv]
+
+    deanonymized_nodes = {}
+    
+    deanonymized_nodes['1'] = f(eq, 1, 1)
+    deanonymized_nodes['2-4'] = f(eq, 2, 4)
+    deanonymized_nodes['5-10'] = f(eq, 5, 10)
+    deanonymized_nodes['11-20'] = f(eq, 11, 20)
+    deanonymized_nodes['20-inf'] = f(eq, 20, 'inf')
+
+    tot = sum([vv for v in deanonymized_nodes.values() for vv in v])
+
+    data = pd.Series()
+    for k,v in deanonymized_nodes.items():
+        data['{} deanonymization [{}]'.format(query_name, k)] = sum(v) / tot
+    
+    return data
+
+def hi(g, i: int):
+    neighbors = {n: knbrs(g, n, i-1) for n in g.nodes()}
+
+    res = {}
+    for k,v in neighbors.items():
+        if i == 0:
+            res[k] = [0]
+        else:
+            res[k] = sorted([g.degree(n) for n in v])
+
+    return res
+
+def deanonymize_h(g, i):
+    h = hi(g, i)
+
+    #print('h', i)
+    #print(h)
+
+    return deanonymize(h, 'h({})'.format(i))
