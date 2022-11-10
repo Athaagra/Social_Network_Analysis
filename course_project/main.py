@@ -20,7 +20,8 @@ import pandas as pd
 import numpy as np
 import random
 from collections import Counter
-
+import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN
 
 n=50
 p=0.8
@@ -193,87 +194,28 @@ AverageDegreePert=np.mean(dg)
 NumberOfNodesPert = G.number_of_nodes()
 NumberOfEdgesPert = G.number_of_edges()
 print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(AverageClusteringPert,densityPert,diameterPert,AverageDegreePert,Nodes,Edges,NumberOfNodesPert,NumberOfEdgesPert),file=open('infoPert.txt','w'))
-
-def eq_class(facts: dict):
-    eq_class = {}
-    for key, degrees in facts.items():
-        k = tuple(sorted(degrees))
-        
-        if k not in eq_class:
-            eq_class[k] = [] # Initialize the value field for that empty key
-        
-        eq_class[k].append(key)
-
-    return eq_class
-
-
-def deanonymize(facts, query_name):
-    eq = eq_class(facts).values()
-
-    f = lambda vals, minv, maxv: [len(v) for v in vals if len(v) >= minv and len(v) <= maxv]
-
-    deanonymized_nodes = {}
-    
-    deanonymized_nodes['1'] = f(eq, 1, 1)
-    deanonymized_nodes['2-4'] = f(eq, 2, 4)
-    deanonymized_nodes['5-10'] = f(eq, 5, 10)
-    deanonymized_nodes['11-20'] = f(eq, 11, 20)
-    deanonymized_nodes['20-inf'] = f(eq, 20, 'inf')
-
-    tot = sum([vv for v in deanonymized_nodes.values() for vv in v])
-
-    data = pd.Series()
-    for k,v in deanonymized_nodes.items():
-        data['{} deanonymization [{}]'.format(query_name, k)] = sum(v) / tot
-    
-    return data
-
-def hi(g, i: int):
-    neighbors = {n: knbrs(g, n, i-1) for n in g.nodes()}
-
-    res = {}
-    for k,v in neighbors.items():
-        if i == 0:
-            res[k] = [0]
-        else:
-            res[k] = sorted([g.degree(n) for n in v])
-
-    return res
-
-def deanonymize_h(g, i):
-    h = hi(g, i)
-
-    #print('h', i)
-    #print(h)
-
-    return deanonymize(h, 'h({})'.format(i))
-
-
-
-
-def knbrs(g, start, k):
-    nbrs = set([start])
-    for i in range(k):
-        nbrs = set((nbr for n in nbrs for nbr in g[n]))
-    return nbrs
-
-h = [deanonymize_h(pert_graph, i) for i in range(0, 5)]
 ###################
 #   deanonymize neighborsOne-Two
 ##################
 #def normalize(a):
 #    return a/a.sum()
 nodes=G.nodes()
+#nodes=list(nodes)
 fnei=[]
+fc=[]
 for n in nodes:
-    neig=list(G.neighbors(n))
-    neigneig=[len(list(G.neighbors(ne))) for ne in neig]
-    degree=G.degree(n)
-    degreeT=[G.degree(ne) for ne in neig]
-    degreeT=np.array(degreeT)
-    degreeT=np.sum(degreeT)
-    fnei.append([n,degree,len(neig),neig,degreeT,len(neigneig),neigneig])
+    if n!=' Target' and n!='Source ':
+        neig=list(G.neighbors(n))
+        neigneig=[len(list(G.neighbors(ne))) for ne in neig]
+        neigneig=[newneig for newneig in neigneig]
+        degree=G.degree(n)
+        degreeT=[G.degree(ne) for ne in neig]
+        degreeT=np.array(degreeT)
+        degreeT=np.sum(degreeT)
+        fc.append([n,degree,len(neig),degreeT,len(neigneig)])
+        fnei.append([n,degree,len(neig),neig,degreeT,len(neigneig),neigneig])
 fnei=np.array(fnei)
+fc=np.array(fc)
 c=Counter(fnei[:,1])
 counterO=0
 counterT=0
@@ -331,3 +273,30 @@ for v in c.values():
     if v >=20:
         counterFi +=1
 OneTh.append([counterO/len(fnei),counterT/len(fnei),counterTh/len(fnei),counterF/len(fnei),counterFi/len(fnei)])
+c=Counter(fnei[:,5])
+counterO=0
+counterT=0
+counterTh=0
+counterF=0
+counterFi=0
+OneFo=[]
+for v in c.values():
+    if v >= 1 and v <=1:
+        counterO += 1
+    if v >=2 and v<=4:
+        counterT +=1
+    if v >=5 and v<=10:
+        counterTh +=1
+    if v >=11 and v<=20:
+        counterF +=1
+    if v >=20:
+        counterFi +=1
+OneFo.append([counterO/len(fnei),counterT/len(fnei),counterTh/len(fnei),counterF/len(fnei),counterFi/len(fnei)])
+OneFi = pd.DataFrame(fc)
+clustering = DBSCAN(eps=85, min_samples=4).fit(fc)
+DBSCAN_dataset = OneFi.copy()
+DBSCAN_dataset.loc[:,'Cluster'] = clustering.labels_
+OneFi=DBSCAN_dataset.Cluster.value_counts().to_frame()
+print(OneN,OneT,OneTh,OneFo,OneFi,file=open('queries.txt','w'))
+ 
+
