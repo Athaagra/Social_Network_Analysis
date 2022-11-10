@@ -259,7 +259,7 @@ def knbrs(g, start, k):
 
 h = [deanonymize_h(pert_graph, i) for i in range(0, 5)]
 ###################
-#   deanonymize neighborsOne
+#   deanonymize neighborsOne-Two
 ##################
 #def normalize(a):
 #    return a/a.sum()
@@ -267,8 +267,12 @@ nodes=G.nodes()
 fnei=[]
 for n in nodes:
     neig=list(G.neighbors(n))
+    neigneig=[len(list(G.neighbors(ne))) for ne in neig]
     degree=G.degree(n)
-    fnei.append([n,degree,len(neig),neig])
+    degreeT=[G.degree(ne) for ne in neig]
+    degreeT=np.array(degreeT)
+    degreeT=np.sum(degreeT)
+    fnei.append([n,degree,len(neig),neig,degreeT,len(neigneig),neigneig])
 fnei=np.array(fnei)
 c=Counter(fnei[:,1])
 counterO=0
@@ -289,3 +293,41 @@ for v in c.values():
     if v >=20:
         counterFi +=1
 OneN.append([counterO/len(fnei),counterT/len(fnei),counterTh/len(fnei),counterF/len(fnei),counterFi/len(fnei)])
+c=Counter(fnei[:,2])
+counterO=0
+counterT=0
+counterTh=0
+counterF=0
+counterFi=0
+OneT=[]
+for v in c.values():
+    if v >= 1 and v <=1:
+        counterO += 1
+    if v >=2 and v<=4:
+        counterT +=1
+    if v >=5 and v<=10:
+        counterTh +=1
+    if v >=11 and v<=20:
+        counterF +=1
+    if v >=20:
+        counterFi +=1
+OneT.append([counterO/len(fnei),counterT/len(fnei),counterTh/len(fnei),counterF/len(fnei),counterFi/len(fnei)])
+c=Counter(fnei[:,4])
+counterO=0
+counterT=0
+counterTh=0
+counterF=0
+counterFi=0
+OneTh=[]
+for v in c.values():
+    if v >= 1 and v <=1:
+        counterO += 1
+    if v >=2 and v<=4:
+        counterT +=1
+    if v >=5 and v<=10:
+        counterTh +=1
+    if v >=11 and v<=20:
+        counterF +=1
+    if v >=20:
+        counterFi +=1
+OneTh.append([counterO/len(fnei),counterT/len(fnei),counterTh/len(fnei),counterF/len(fnei),counterFi/len(fnei)])
