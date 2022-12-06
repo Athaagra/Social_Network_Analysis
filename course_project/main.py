@@ -298,5 +298,220 @@ DBSCAN_dataset = OneFi.copy()
 DBSCAN_dataset.loc[:,'Cluster'] = clustering.labels_
 OneFi=DBSCAN_dataset.Cluster.value_counts().to_frame()
 print(OneN,OneT,OneTh,OneFo,OneFi,file=open('queries.txt','w'))
- 
 
+# we use Pandas to work with the data as it makes working with categorical data very easy
+import pandas as pd
+
+# this is a list of the column names in our dataset (as the file doesn't contain any headers)
+#names = (
+#    'age',
+#    'workclass', #Private, Self-emp-not-inc, Self-emp-inc, Federal-gov, Local-gov, State-gov, Without-pay, Never-worked.
+#    'fnlwgt', # "weight" of that person in the dataset (i.e. how many people does that person represent) -> https://www.kansascityfed.org/research/datamuseum/cps/coreinfo/keyconcepts/weights
+#    'education',
+#    'education-num',
+#    'marital-status',
+#    'occupation',
+#    'relationship',
+#    'race',
+#    'sex',
+#    'capital-gain',
+#    'capital-loss',
+#    'hours-per-week',
+#    'native-country',
+#    'income',
+#)
+
+# some fields are categorical and will require special treatment
+categorical = set((
+    'Degree',
+    'Neigh',
+    #'workclass',
+    #'education',
+    #'marital-status',
+    #'occupation',
+    #'relationship',
+    #'sex',
+    #'native-country',
+    #'race',
+    #'income',
+))
+#df = pd.read_csv("adult.all.txt", sep=", ", header=None, names=names, index_col=False, engine='python');# We load the data using Pandas
+#df.head()
+#df=df[0:6]
+OneFp=pd.DataFrame()
+OneFp['Degree']=pd.DataFrame(fnei[0:,1])
+OneFp['Neigh']=pd.DataFrame(fnei[1:,2])
+df=OneFp
+#for name in categorical:
+#    df[name] = df[name].astype('category')
+
+def get_spans(df, partition, scale=None):
+    """
+    :param        df: the dataframe for which to calculate the spans
+    :param partition: the partition for which to calculate the spans
+    :param     scale: if given, the spans of each column will be divided
+                      by the value in `scale` for that column
+    :        returns: The spans of all columns in the partition
+    """
+    spans = {}
+    for column in df.columns:
+        if column in categorical:
+            span = len(df[column][partition].unique())
+        else:
+            span = df[column][partition].max()-df[column][partition].min()
+        if scale is not None:
+            span = span/scale[column]
+        spans[column] = span
+    return spans
+
+full_spans = get_spans(df, df.index)
+full_spans
+
+def split(df, partition, column):
+    """
+    :param        df: The dataframe to split
+    :param partition: The partition to split
+    :param    column: The column along which to split
+    :        returns: A tuple containing a split of the original partition
+    """
+    dfp = df[column][partition]
+    print(dfp)
+    if column in categorical:
+        values = dfp.unique()
+        print(values)
+        lv = set(values[:len(values)//2])
+        rv = set(values[len(values)//2:])
+        return dfp.index[dfp.isin(lv)], dfp.index[dfp.isin(rv)]
+    else:        
+        median = dfp.median()
+        dfl = dfp.index[dfp < median]
+        dfr = dfp.index[dfp >= median]
+        return (dfl, dfr)
+
+def is_k_anonymous(df, partition, sensitive_column, k=3):
+    """
+    :param               df: The dataframe on which to check the partition.
+    :param        partition: The partition of the dataframe to check.
+    :param sensitive_column: The name of the sensitive column
+    :param                k: The desired k
+    :returns               : True if the partition is valid according to our k-anonymity criteria, False otherwise.
+    """
+    if len(partition) < k:
+        return False
+    return True
+
+def partition_dataset(df, feature_columns, sensitive_column, scale, is_valid):
+    """
+    :param               df: The dataframe to be partitioned.
+    :param  feature_columns: A list of column names along which to partition the dataset.
+    :param sensitive_column: The name of the sensitive column (to be passed on to the `is_valid` function)
+    :param            scale: The column spans as generated before.
+    :param         is_valid: A function that takes a dataframe and a partition and returns True if the partition is valid.
+    :returns               : A list of valid partitions that cover the entire dataframe.
+    """
+    finished_partitions = []
+    partitions = [df.index]
+    print(partitions)
+    while partitions:
+        partition = partitions.pop(0)
+        spans = get_spans(df[feature_columns], partition, scale)
+        for column, span in sorted(spans.items(), key=lambda x:-x[1]):
+            lp, rp = split(df, partition, column)
+            if not is_valid(df, lp, sensitive_column) or not is_valid(df, rp, sensitive_column):
+                continue
+            partitions.extend((lp, rp))
+            break
+        else:
+            finished_partitions.append(partition)
+    return finished_partitions
+
+# we apply our partitioning method to two columns of our dataset, using "income" as the sensitive attribute
+feature_columns = ['Degree', 'Neigh']
+sensitive_column = 'income'
+finished_partitions = partition_dataset(df, feature_columns, sensitive_column, full_spans, is_k_anonymous)
+# we get the number of partitions that were created
+len(finished_partitions)
+
+import matplotlib.pylab as pl
+import matplotlib.patches as patches
+
+def build_indexes(df):
+    indexes = {}
+    for column in categorical:
+        print(column)
+        values = sorted(df[column].unique())
+        print(values)
+        indexes[column] = { x : y for x, y in zip(values, range(len(values)))}
+    return indexes
+
+def get_coords(df, column, partition, indexes, offset=0.1):
+    if column in categorical:
+        print(column)
+        sv = df[column][partition].sort_values()
+        print('This is the sorted values {}'.format(sv))
+        l, r = indexes[column][sv[sv.index[0]]], indexes[column][sv[sv.index[-1]]]+1.0
+        print('This is the l,r {},{}'.format(l,r))
+    else:
+        sv = df[column][partition].sort_values()
+        print('This is the sorted values {}'.format(sv))
+        next_value = sv[sv.index[-1]]
+        print('This is the next value {}'.format(next_value))
+        larger_values = df[df[column] > next_value][column]
+        print(larger_values)
+        if len(larger_values) > 0:
+            next_value = larger_values.min()
+            print(next_value)
+        l = sv[sv.index[0]]
+        print(l)
+        r = next_value
+        print('This is the next_value {}'.format(r))
+    # we add some offset to make the partitions more easily visible
+    l -= offset
+    print('subtract this parition to the offset {}'.format(l))
+    r += offset
+    print('add this parition to the offset {}'.format(r))
+    return l, r
+
+def get_partition_rects(df, partitions, column_x, column_y, indexes, offsets=[0.1, 0.1]):
+    rects = []
+    for partition in partitions:
+        print(partition)
+        print('This is the index {}'.format(indexes))
+        print(column_x)
+        print(column_y)
+        xl, xr = get_coords(df, column_x, partition, indexes, offset=offsets[0])
+        print(xl,xr)
+        yl, yr = get_coords(df, column_y, partition, indexes, offset=offsets[1])
+        print(yl,yr)
+        rects.append(((xl, yl),(xr, yr)))
+    return rects
+
+def get_bounds(df, column, indexes, offset=1.0):
+    if column in categorical:
+        return 0-offset, len(indexes[column])+offset
+    return df[column].min()-offset, df[column].max()+offset
+
+# we calculate the bounding rects of all partitions that we created
+feature_columns=['Degree','Neigh']
+indexes = build_indexes(df)
+column_x, column_y = feature_columns[:2]
+print(column_x)
+print(column_y)
+rects = get_partition_rects(df, finished_partitions, column_x, column_y, indexes, offsets=[0.0, 0.0])
+# let's see how our rects look like
+rects[:10]
+
+# we plot the rects
+def plot_rects(df, ax, rects, column_x, column_y, edgecolor='black', facecolor='none'):
+    for (xl, yl),(xr, yr) in rects:
+        ax.add_patch(patches.Rectangle((xl,yl),xr-xl,yr-yl,linewidth=1,edgecolor=edgecolor,facecolor=facecolor, alpha=0.5))
+    ax.set_xlim(*get_bounds(df, column_x, indexes))
+    ax.set_ylim(*get_bounds(df, column_y, indexes))
+    ax.set_xlabel(column_x)
+    ax.set_ylabel(column_y)
+
+pl.figure(figsize=(20,20))
+ax = pl.subplot(111)
+plot_rects(df, ax, rects, column_x, column_y, facecolor='r')
+pl.scatter(df[column_x], df[column_y])
+pl.show()
