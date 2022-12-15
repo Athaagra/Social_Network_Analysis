@@ -23,49 +23,54 @@ from collections import Counter
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 
-n=50
-p=0.8
-random.seed(0)
-#fileL = open('twitter-larger.tsv','rb')
-##fileS = open('twitter_smallT.csv','rb')
+Nodes=0
+Edges=0
+
+# =============================================================================
+# n=50
+# p=0.8
+# random.seed(0)
+# #fileL = open('twitter-larger.tsv','rb')
+# ##fileS = open('twitter_smallT.csv','rb')
+# #read from file file
+# ##Gs=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
+# #fianlly close the inputs stream
+# ##fileS.close()
+# 
+# G=nx.erdos_renyi_graph(n, p, seed=0, directed=True)
+# #calculate the subgraph of strong components
+# StrongComponent = list(nx.strongly_connected_components(G))
+# LargestStrong = max(StrongComponent, key=len)
+# WeaklyComponent = list(nx.weakly_connected_components(G))
+# largestWeakly = max(WeaklyComponent, key=len)
+# 
+# lar = []
+# ve = []
+# # find the largest components and edges
+# for u in largestWeakly:
+#     neigh = list(G.neighbors(u))
+#     j=0
+#     while j != len(neigh):
+#         neighv = neigh[j]
+#         lar.append([u,neighv])
+#         j=j+1
+# Nodes=G.number_of_nodes()
+# Edges=G.number_of_edges()
+# import csv
+# # create a csv with giant component
+# f = open('LargestComponent2022ErdosRenyi.csv', 'w', encoding='utf-8')
+# f.write('Source \t Target\n')
+# writer = csv.writer(f, delimiter='\t',
+#                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
+# for line in lar:
+#     print(line)
+#     writer.writerow(line)
+# f.close()
+# =============================================================================
+#'LargestComponent2022CitSample.csv'
+fileS = open('giant_componentnLarge20.csv','rb')
 #read from file file
-##Gs=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
-#fianlly close the inputs stream
-##fileS.close()
-
-G=nx.erdos_renyi_graph(n, p, seed=0, directed=True)
-#calculate the subgraph of strong components
-StrongComponent = list(nx.strongly_connected_components(G))
-LargestStrong = max(StrongComponent, key=len)
-WeaklyComponent = list(nx.weakly_connected_components(G))
-largestWeakly = max(WeaklyComponent, key=len)
-
-lar = []
-ve = []
-# find the largest components and edges
-for u in largestWeakly:
-    neigh = list(G.neighbors(u))
-    j=0
-    while j != len(neigh):
-        neighv = neigh[j]
-        lar.append([u,neighv])
-        j=j+1
-Nodes=G.number_of_nodes()
-Edges=G.number_of_edges()
-import csv
-# create a csv with giant component
-f = open('LargestComponent2022ErdosRenyi.csv', 'w', encoding='utf-8')
-f.write('Source \t Target\n')
-writer = csv.writer(f, delimiter='\t',
-                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
-for line in lar:
-    print(line)
-    writer.writerow(line)
-f.close()
-
-fileS = open('LargestComponent2022ErdosRenyi.csv','rb')
-#read from file file
-G=nx.read_edgelist(fileS, delimiter='\t',create_using=nx.DiGraph())
+G=nx.read_edgelist(fileS, delimiter=',',create_using=nx.DiGraph())
 #fianlly close the inputs stream
 fileS.close()
 
@@ -316,12 +321,12 @@ for index in range(0,len(finished_partitions)):
         at.append(att)
     los+=cl[0]*sum(at)
 #print(density,file=open('density.txt','w'))
-print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {} lossInformation {} k-clusters {} number of clusters {}".format(AverageClustering,density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC,los,3,len(finished_partitions)),file=open('info.txt','w'))
+print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {} lossInformation {} k-clusters {} number of clusters {}".format(AverageClustering,density,diameter,AverageDegree,Nodes,Edges,NumberOfNodesC,NumberOfEdgesC,los,3,len(finished_partitions)),file=open('infoErdos.txt','w'))
 
 def perturbation(graph, p):
     g = graph.copy()
     edges_to_remove = int(len(g.edges()) * p)
-    
+    print('This is the edges to be removed {}'.format(edges_to_remove))
     removed_edges = []
     for i in range(edges_to_remove):
         random_edge = random.choice(list(g.edges()))
@@ -353,7 +358,7 @@ GU=G.to_undirected()
 AverageClusteringPert = nx.average_clustering(GU)
 densityPert=nx.density(G)
 if nx.is_connected(GU):
-    diameterPert=nx.diameter(G)
+    diameterPert=nx.diameter(GU)
 else:
     lp=[]
     subgraphs=nx.connected_components(GU)
@@ -374,7 +379,8 @@ dg=dg[:,1].astype(float)
 AverageDegreePert=np.mean(dg)
 NumberOfNodesPert = G.number_of_nodes()
 NumberOfEdgesPert = G.number_of_edges()
-print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(AverageClusteringPert,densityPert,diameterPert,AverageDegreePert,Nodes,Edges,NumberOfNodesPert,NumberOfEdgesPert),file=open('infoPert.txt','w'))
+print('Number of nodes {} Number of edges {}'.format(NumberOfNodesPert,NumberOfEdgesPert))
+print("AC {} density {} diameter {} Average Degree {} nodes {} edges {}  Number of Nodes Component {} Number of Edges Component {}".format(AverageClusteringPert,densityPert,diameterPert,AverageDegreePert,Nodes,Edges,NumberOfNodesPert,NumberOfEdgesPert),file=open('infoPertErdos.txt','w'))
 ###################
 #   deanonymize neighborsOne-Two
 ##################
@@ -393,7 +399,7 @@ for n in nodes:
         degreeT=[G.degree(ne) for ne in neig]
         degreeT=np.array(degreeT)
         degreeT=np.sum(degreeT)
-        fc.append([n,degree,len(neig),degreeT,len(neigneig)])
+        fc.append([degree,len(neig),degreeT,len(neigneig)])
         fnei.append([n,degree,len(neig),neig,degreeT,len(neigneig),neigneig])
 fnei=np.array(fnei)
 fc=np.array(fc)
@@ -474,7 +480,7 @@ for v in c.values():
         counterFi +=1
 OneFo.append([counterO/len(fnei),counterT/len(fnei),counterTh/len(fnei),counterF/len(fnei),counterFi/len(fnei)])
 OneFi = pd.DataFrame(fc)
-clustering = DBSCAN(eps=85, min_samples=4).fit(fc)
+clustering = DBSCAN(eps=85, min_samples=4).fit(fc.astype(int))
 DBSCAN_dataset = OneFi.copy()
 DBSCAN_dataset.loc[:,'Cluster'] = clustering.labels_
 OneFi=DBSCAN_dataset.Cluster.value_counts().to_frame()
@@ -659,7 +665,10 @@ for index in range(0,len(finished_partitions)):
     ma=mm-mn
     at=[]
     for j in cl[1:-1]:
-        att=ma/j
+        if j!=0:
+            att=ma/j
+        else:
+            att=0
         at.append(att)
     los+=cl[0]*sum(at)
-print(OneN,OneT,OneTh,OneFo,OneFi,los,3,len(finished_partitions),file=open('queries.txt','w'))
+print(OneN,OneT,OneTh,OneFo,OneFi,los,3,len(finished_partitions),file=open('queriesErdos.txt','w'))
