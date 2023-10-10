@@ -1,184 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Oct  1 18:55:03 2023
+Created on Sun Oct  8 17:19:42 2023
 
 @author: Optimus
 """
 
-import numpy as np
-import pandas as pd
-import networkx as nx
-import matplotlib.pyplot as plt
-
-import warnings
-warnings.filterwarnings('ignore')
-
-
-def make_graph(G):
-    # check if Graph is directed
-    print('Directed:', nx.is_directed(G))
-
-    # check if Graph is weighted
-    print('Weighted:', nx.is_weighted(G))
-    print()
-    
-    # converting to directed Graph for PageRank
-    if not nx.is_directed(G):
-        print('Graph converted to directed..')
-        #G = G.to_directed() 
-        G = G.to_undirected()
-
-    print('Directed:', nx.is_directed(G))
-    print()
-
-    # labelling nodes as integers
-    print('Relabelling nodes to integers..')
-    n_unique_nodes = len(set(G.nodes()))
-    node2int = dict(zip(set(G.nodes()), range(n_unique_nodes)))
-    int2node = {v:k for k,v in node2int.items()}
-
-    G = nx.relabel_nodes(G, node2int)
-
-    # remove isolated nodes
-    print('Removing isolated nodes..')
-    nodes = G.nodes()
-    for node in nodes:
-        if len(G.edges(node))==0:
-            G.remove_node(node)
-    return G, int2node           
-
-def plot_graph(G, final_probs, int2node, bool_final_probs=False):
-    
-    # defining labels
-    labels = int2node
-
-    # zachary karate club
-    try:
-        clubs = np.array(list(map(lambda x: G.nodes[x]['club'], G.nodes())))
-        labels = dict(zip(G.nodes(), clubs)) 
-    except:
-        pass   
-
-    if not bool_final_probs:
-        nx.draw(G, with_labels=True, alpha=0.8, arrows=False, labels=labels)
-    else:
-        nx.draw(G, with_labels=True, alpha=0.8, arrows=False, node_color = final_probs, \
-                                                                                        cmap=plt.get_cmap('viridis'), labels=labels)
-
-        # adding color bar for pagerank importances
-        sm = plt.cm.ScalarMappable(cmap=plt.get_cmap('viridis'), norm=plt.Normalize(vmin = min(final_probs), vmax=max(final_probs)))
-        sm._A = []
-        plt.colorbar(sm)  
-    return plt
-
-def make_pagerank_matrix(G, alpha):
-    n_nodes = len(G.nodes())
-
-    # building adjacent matrix
-    adj_matrix = np.zeros(shape=(n_nodes, n_nodes))
-    for edge in G.edges():
-        adj_matrix[edge[0], edge[1]] = 1
-
-    # building transition probability matrix
-    print('This is adjacency matrix {}'.format(adj_matrix))
-    tran_matrix = 1# adj_matrix / np.sum(adj_matrix, axis=1).reshape(-1,1)
-
-    # building random surfer matrix
-    random_surf = np.ones(shape = (n_nodes, n_nodes)) / n_nodes    
-
-    # building transition matrix for absorbing nodes
-    absorbing_nodes = np.zeros(shape = (n_nodes,))
-    for node in G.nodes():
-        if len(G.edges(node))==0:
-        #if len(G.out_edges(node))==0:
-            absorbing_nodes[node] = 1
-    absorbing_node_matrix = np.outer(absorbing_nodes, np.ones(shape = (n_nodes,))) / n_nodes
-
-    # stochastic matrix
-    stochastic_matrix = tran_matrix + absorbing_node_matrix
-
-    # pagerank matrix
-    pagerank_matrix = alpha * stochastic_matrix + (1-alpha) * random_surf
-    return adj_matrix#pagerank_matrix
-
-def random_walk(G, alpha, n_iter):
-    n_nodes = len(G.nodes())
-    initial_state = np.ones(shape=(n_nodes,)) / n_nodes
-    pagerank_matrix = make_pagerank_matrix(G, alpha)
-
-    new_initial_state = initial_state
-    print('Running random walk..')
-    NORM = []
-    for i in range(n_iter):
-        final_state = np.dot(np.transpose(pagerank_matrix), new_initial_state)
-        
-        prev_initial_state = new_initial_state
-        new_initial_state = final_state
-        L2 = np.linalg.norm(new_initial_state-prev_initial_state)
-        NORM.append(L2)
-        if np.allclose(new_initial_state, prev_initial_state):
-            print(f'Converged at {i+1} iterations..')
-            break
-
-    plt.figure(figsize=(5,4))
-    plt.plot(range(i+1), NORM)
-    plt.xlabel('iterations')
-    plt.ylabel('Euclidean Norm')
-    plt.title('Convergence plot')
-    plt.show()
-    return final_state, pagerank_matrix
-
-def run(G, alpha, n_iter):
-
-    G, int2node = make_graph(G)
-    print()
-    print('Number of nodes: ', len(G.nodes()))
-    print('Number of edges: ', len(G.edges())) 
-    print()    
-
-    final_probs,pagerank_matrix = random_walk(G, alpha, n_iter)
-
-    # ensuring pagerank importance for each node
-    assert len(final_probs) == len(G.nodes())
-
-    # ensuring probabilities sum to 1
-    print('This is pagerank matrix {}'.format(pagerank_matrix))
-    assert np.allclose(np.sum(final_probs), 1)
-
-    print()
-    print('Pagerank importances..')
-    print(final_probs)
-    print('This is pagerank matrix {}'.format(pagerank_matrix))
-
-    plt.figure(figsize=(25,8))
-    plt.subplot(121)
-    plot_graph(G, None, int2node, bool_final_probs=False)
-    plt.subplot(122)
-    plot_graph(G, final_probs, int2node, bool_final_probs=True)
-    plt.show()
-    return final_probs,pagerank_matrix
-
-alpha = 0.8
-n_iter = 1000
-
-G = nx.karate_club_graph()
-final_probs,pagerank_matrix = run(G, alpha, n_iter)
-
-pg = make_pagerank_matrix(G, 1)
-
-matrixm=[]
-for nod in range (2,len(G.nodes)):
-    for node in range (2,len(G.nodes)):
-        Tv=np.vstack((pg[nod-2][node-2:node+1],pg[nod-1][node-2:node+1]))
-        Tre=np.vstack((Tv,pg[nod][node-2:node+1]))
-        mtr=sum(sum(Tre))
-        if mtr==6:
-            print('motif triangle')
-            print('This is the motif {} and node {} nod {}'.format(Tre,node,nod))
-        matrixm.append(Tre)
-
-#Conductance and clustering measures
+#Implementation of some common vector operations
+#that are needed in both algorithms
 import networkx as nx
 import numpy as np
 
@@ -245,11 +74,11 @@ def get_partition(G, fv):
     #sorting the vertices based on components of fiedler vector
     c = sorted(range(len(fv)), key=lambda k: fv[k])
     #partition 1
-    c11 = set(i+1 for i in c[:16])#pick 1st 16
-    c12 = set(j+1 for j in c[16:])# pick rest i.e 18
+    c11 = set(i+1 for i in c[:c[1]])#pick 1st 16
+    c12 = set(j+1 for j in c[c[1]:])# pick rest i.e 18
     #partition 2
-    c21 = set(j+1 for j in c[-16:])#pick last 16
-    c22 = set(j+1 for j in c[:-16])#pick rest
+    c21 = set(j+1 for j in c[-c[1]:])#pick last 16
+    c22 = set(j+1 for j in c[:-c[1]])#pick rest
     # minimize cut size
     cut_size_1 = 0
     cut_size_2 = 0
@@ -265,18 +94,44 @@ def get_partition(G, fv):
         return c11, c12
     else: 
         return c21, c22
-
-
-
-
+    
+    
+#n = 1000  # 1000 nodes
+#m = 5000  # 5000 edges
+#G = nx.gnm_random_graph(n, m)
+#G = nx.karate_club_graph()
+G=nx.read_edgelist('cit-hep.txt', delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
+G = G.to_undirected(G)
+m = nx.linalg.modularitymatrix.modularity_matrix(G)
+no_of_vertices = m.shape[0]
+lev = leading_eigen_vector(m).getA1()
+c1 = set()
+c2 = set()
+# assigning community based on sign
+for i in range(no_of_vertices):
+		if lev[i] < 0:
+			c2.add(i+1)
+		else:
+			c1.add(i+1)
+print("Community discovery by Modularity Maximization ---- ")
+print("Community 1 :", c1)
+print("Community 2 :", c2)
+print("Size : ",len(c1), len(c2), "respectively")
 
 def a_matrix(G, alpha):
     n_nodes = len(G.nodes())
+    a_nodes=np.array(G.nodes())
     edges = G.edges()
     # building adjacent matrix
     adj_matrix = np.zeros(shape=(n_nodes, n_nodes))
-    for edge in G.edges():
-        adj_matrix[edge[0], edge[1]] = 1
+    #for edge in G.edges():
+    #    adj_matrix[edge[0], edge[1]] = 1
+    for i in range(n_nodes):
+        index_n=np.where(a_nodes==a_nodes[i])
+        n_node_edges=np.array(list(G.neighbors(a_nodes[i])))
+        for j in range(len(n_node_edges)):
+            index_nn=np.where(a_nodes==a_nodes[j])
+            adj_matrix[index_n,index_nn]=1
     edges_l=list(edges)
     edges_l.append([1000,1000])
     c=0
@@ -291,19 +146,20 @@ def a_matrix(G, alpha):
     
     degree_matrix = np.zeros(shape=(n_nodes, n_nodes))
     for i in edge_su:
-        degree_matrix[i[0],i[0]]=i[1]
+        degree_matrix[np.where(a_nodes==i[0]),np.where(a_nodes==i[0])]=i[1]
     L=adj_matrix+degree_matrix
     return adj_matrix,degree_matrix,L
 
 def edge_conductance(c1,c2):
     c1=list(c1)
     c2=list(c2)
+    a_nodes=np.array(G.nodes())
     edges = G.edges()
     ed=list(edges)
     shared_con=0
     for q in range(len(c1)):
         for x in range(len(c2)):
-            if (c1[q],c2[x]) in ed:
+            if (a_nodes[c1[q]],a_nodes[c2[x]]) in ed or (a_nodes[c2[x]],a_nodes[c1[q]]) in ed:
                 shared_con+=1
     edc1=0
     edc2=0
@@ -333,3 +189,38 @@ print("Community 1 : ", c1)
 print("Community 2 : ", c2)
 print("Size : ",len(c1), " and ", len(c2), "respectively")
 print("Conductance {}".format(conductance))
+#same thing using library function
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+# reading the data and looking at the first five rows of the data
+data=pd.read_csv("Wholesale customers data.csv")
+data.head()
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data)
+
+# statistics of scaled data
+pd.DataFrame(data_scaled).describe()
+
+
+# defining the kmeans function with initialization as k-means++
+kmeans = KMeans(n_clusters=2, init='k-means++')
+
+# fitting the k means algorithm on scaled data
+kmeans.fit(data_scaled)
+#kmeans = KMeans(n_jobs = -1, n_clusters = 5, init='k-means++')
+#kmeans.fit(data_scaled)
+#pred = kmeans.predict(data_scaled)
+
+
+kmeans = KMeans(n_jobs = -1, n_clusters = 5, init='k-means++')
+kmeans.fit(data_scaled)
+pred = kmeans.predict(data_scaled)
+frame = pd.DataFrame(data_scaled)
+frame['cluster'] = pred
+frame['cluster'].value_counts()
