@@ -164,10 +164,10 @@ def edge_conductance(c1,c2):
     c1_ind=np.repeat(c1_ind,len(c2))
     c1_ind=c1_ind.reshape(len(c1_ind),1)
     c1c2_ind=np.hstack((c1_ind,c2_ind))
-    for q in range(len(c1c2_ind)):
-        #print(c1c2_ind[q])
-        if (a_nodes[c1c2_ind[q][0]],a_nodes[c1c2_ind[q][1]]) in ed or (a_nodes[c1c2_ind[q][1]],a_nodes[c1c2_ind[q][0]]) in ed:
+    for q in c1c2_ind:
+        if (a_nodes[q[0]],a_nodes[q[1]]) in ed or (a_nodes[q[1]],a_nodes[q[0]]) in ed:
             shared_con+=1
+            print('edge detected')
     edc1=0
     edc2=0
     for e in edges:
