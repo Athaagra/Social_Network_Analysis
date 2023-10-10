@@ -157,10 +157,17 @@ def edge_conductance(c1,c2):
     edges = G.edges()
     ed=list(edges)
     shared_con=0
-    for q in range(len(c1)):
-        for x in range(len(c2)):
-            if (a_nodes[c1[q]],a_nodes[c2[x]]) in ed or (a_nodes[c2[x]],a_nodes[c1[q]]) in ed:
-                shared_con+=1
+    c2_ind=np.arange(0,len(c2))
+    c2_ind=np.tile(c2_ind,len(c1))
+    c2_ind=c2_ind.reshape(len(c2_ind),1)
+    c1_ind=np.arange(0,len(c1))
+    c1_ind=np.repeat(c1_ind,len(c2))
+    c1_ind=c1_ind.reshape(len(c1_ind),1)
+    c1c2_ind=np.hstack((c1_ind,c2_ind))
+    for q in range(len(c1c2_ind)):
+        #print(c1c2_ind[q])
+        if (a_nodes[c1c2_ind[q][0]],a_nodes[c1c2_ind[q][1]]) in ed or (a_nodes[c1c2_ind[q][1]],a_nodes[c1c2_ind[q][0]]) in ed:
+            shared_con+=1
     edc1=0
     edc2=0
     for e in edges:
