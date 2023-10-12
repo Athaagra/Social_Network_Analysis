@@ -150,7 +150,7 @@ def a_matrix(G, alpha):
     L=adj_matrix+degree_matrix
     return adj_matrix,degree_matrix,L
 
-def edge_conductance(c1,c2):
+def edge_conductance(c1,c2,G):
     c1=list(c1)
     c2=list(c2)
     a_nodes=np.array(G.nodes())
@@ -170,11 +170,20 @@ def edge_conductance(c1,c2):
             print('edge detected')
     edc1=0
     edc2=0
-    for e in edges:
-        if e[0] in c1:
-            edc1+=1
-        else:
-            edc2+=1
+    for n in range (len(c1)-1):
+        v = list(G.neighbors(a_nodes[c1[n]]))
+        for ng in v:
+            if (a_nodes[c1[n]],ng) in ed: 
+                edc1+=1
+            else:
+                edc1+=0
+    for n in range (len(c2)-1):
+        v = list(G.neighbors(a_nodes[c2[n]]))
+        for ng in v:
+            if (a_nodes[c2[n]],ng) in ed: 
+                edc2+=1
+            else:
+                edc2+=0
     resedgecond=shared_con/min(edc1,edc2)
     return resedgecond
 
@@ -189,7 +198,7 @@ lev = leading_eigen_vector(m)
 fv = eigenVec_2nd_smallest_eigenVal(lev, m)
 #print(fv)
 c1, c2 = get_partition(G, fv)
-conductance=edge_conductance(c1, c2)
+conductance=edge_conductance(c1, c2,G)
 print("Spectral partitioning using Fiedler vector -----")
 print("\n......Own implementation.......")
 print("Community 1 : ", c1)
