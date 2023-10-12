@@ -6,7 +6,7 @@ Size :  16  and  18 respectively
 Conductance 0.3333333333333333
 
 Cit-Hept
-
+Exclusion of one node( not connected and forms a cluster)
 Conductance:0.02688
 Precision: 0.15
 Recall: 0.26
