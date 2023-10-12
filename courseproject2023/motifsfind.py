@@ -213,9 +213,18 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
 # reading the data and looking at the first five rows of the data
-data=pd.read_csv("Wholesale customers data.csv")
-data.head()
-
+def km_feat(G,lev):
+    import pandas as pd
+    all_nodes=np.array(G.nodes())
+    features=[]
+    for node in range(len(all_nodes)):
+        edges=len(list(G.neighbors(all_nodes[node])))
+        features.append([edges,np.array(lev[node])[0][0]])
+    features=np.array(features)
+    datan=pd.DataFrame(features)
+    datan.head()
+    return datan
+data=km_feat(G,lev) 
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 data_scaled = scaler.fit_transform(data)
@@ -225,18 +234,67 @@ pd.DataFrame(data_scaled).describe()
 
 
 # defining the kmeans function with initialization as k-means++
-kmeans = KMeans(n_clusters=2, init='k-means++')
+algorithm = (KMeans(n_clusters = 3 ,init='k-means++', n_init = 10 ,max_iter=300, 
+                        tol=0.0001,  random_state= 111  , algorithm='elkan') )
+algorithm.fit(data_scaled)
+labels1 = algorithm.labels_
+centroids1 = algorithm.cluster_centers_
+pred=algorithm.predict(data_scaled)
 
-# fitting the k means algorithm on scaled data
-kmeans.fit(data_scaled)
-#kmeans = KMeans(n_jobs = -1, n_clusters = 5, init='k-means++')
-#kmeans.fit(data_scaled)
-#pred = kmeans.predict(data_scaled)
+com1=[]
+com2=[]
+for i in range(len(pred)):
+    if pred[i]==0:
+        com1.append(i)
+    else:
+        com2.append(i)
+
+all_nodes=np.array(G.nodes())
+c1k=[]
+c2k=[]
+for index in range(len(com1)-1):
+    c1k.append(all_nodes[com1[index]])
+for index in range(len(com2)-1):
+    c2k.append(all_nodes[com2[index]])
+
+def mpred(community1):        
+    pred_eigen=[]
+    all_nodes=np.array(G.nodes())
+    all_nodes=all_nodes[:-1]
+    for nodec in all_nodes:
+        if nodec in community1:
+            pred_eigen.append(int(0))
+        else:
+            pred_eigen.append(int(1))
+    pred_e=np.array(pred_eigen)
+    return pred_e
+
+pred_e=mpred(c1)
+pred_k=mpred(c1k)
 
 
-kmeans = KMeans(n_jobs = -1, n_clusters = 5, init='k-means++')
-kmeans.fit(data_scaled)
-pred = kmeans.predict(data_scaled)
-frame = pd.DataFrame(data_scaled)
-frame['cluster'] = pred
-frame['cluster'].value_counts()
+
+tp=0
+tn=0
+for i in range(len(pred_e)):
+    if pred_e[i]==pred_k[i]: #and pred_e[i]==0:
+        tp+=1
+    elif pred_e[i]!=pred_k[i]: #and pred_e[i]==1:
+        tn+=1
+precision=tp/(tp+tn)
+print('This is precision {}'.format(precision))
+
+#print('tp {} tn {} fp {} fn {}'.format(tp,tn,fp,fn))
+
+
+from sklearn.metrics import precision_recall_fscore_support as score
+precision, recall, fscore, support = score(pred_e, pred_k)
+
+print('precision: {}'.format(precision))
+print('recall: {}'.format(recall))
+print('fscore: {}'.format(fscore))
+print('support: {}'.format(support))
+
+from sklearn.metrics import classification_report, confusion_matrix
+print(confusion_matrix(pred_e,pred_k))
+print(classification_report(pred_e,pred_k))
