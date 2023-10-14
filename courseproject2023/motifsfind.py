@@ -186,22 +186,23 @@ def edge_conductance(c1,c2,G):
                 edc2+=0
     resedgecond=shared_con/min(edc1,edc2)
     return resedgecond
-def motifs_tre(G,pg):
-	matrixm=[]
-	for nod in range (2,len(G.nodes)):
-	    for node in range (2,len(G.nodes)):
-	        Tv=np.vstack((pg[nod-2][node-2:node+1],pg[nod-1][node-2:node+1]))
-	        Tre=np.vstack((Tv,pg[nod][node-2:node+1]))
-	        mtr=sum(sum(Tre))
-	        if mtr==6:
-	            print('motif triangle')
-	            print('This is the motif {} and node {} nod {}'.format(Tre,node-2,node-1,node,nod-2,nod-1,nod))
-	        matrixm.append([node-2,node-1,node,nod-2,nod-1,nod])
-	return matrixm
+def mt_m(G,adjac):
+    matrixm=[]
+    for nod in range (2,len(G.nodes)):
+        for node in range (2,len(G.nodes)-1):
+            Tv=np.vstack((adjac[nod-2][node-2:node+1],adjac[nod-1][node-2:node+1]))
+            Tre=np.vstack((Tv,adjac[nod][node-2:node+1]))
+            mtr=sum(sum(Tre))
+            if mtr==6:
+                #print('motif triangle')
+                #print('This is the motif nod-2 {} and nod-1 {} nod {} and node-2 {} and node-1 {} and node {}'.format(nod-2,nod-1,nod,node-2,node-1,node))
+                matrixm.append([nod-2,nod-1,nod,node-2,node-1,node])
+    return matrixm
 	
 pg = a_matrix(G, 1)
 #L = nx.linalg.laplacianmatrix.laplacian_matrix(G).todense()
 adjac,degree,Lap=a_matrix(G,0)
+index_motifs=mt_m(G,adjac)
 n = G.number_of_nodes()
 k_max = max(G.degree())[1]#max degree 
 I = np.matrix(np.identity(n))
