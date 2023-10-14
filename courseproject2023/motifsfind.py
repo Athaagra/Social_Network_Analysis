@@ -198,11 +198,28 @@ def mt_m(G,adjac):
                 #print('This is the motif nod-2 {} and nod-1 {} nod {} and node-2 {} and node-1 {} and node {}'.format(nod-2,nod-1,nod,node-2,node-1,node))
                 matrixm.append([nod-2,nod-1,nod,node-2,node-1,node])
     return matrixm
-	
+
+def nu_m(G,index_motifs):
+    a_node=np.array(G.nodes())
+    motif_nodes=[]
+    for i in index_motifs:
+        motif_nodes.append([a_node[i[0]],a_node[i[1]],a_node[i[2]]])
+    
+    num_m=0
+    motif_n=[]
+    for i in range(1,len(motif_nodes)):
+        if motif_nodes[i-1]==motif_nodes[i]:
+           num_m+=1 
+        else: 
+           motif_n.append([motif_nodes[i-1],num_m])
+           num_m=0
+    return motif_n  
+
 pg = a_matrix(G, 1)
 #L = nx.linalg.laplacianmatrix.laplacian_matrix(G).todense()
 adjac,degree,Lap=a_matrix(G,0)
 index_motifs=mt_m(G,adjac)
+mot_n=nu_m(G,index_motifs)
 n = G.number_of_nodes()
 k_max = max(G.degree())[1]#max degree 
 I = np.matrix(np.identity(n))
