@@ -12,8 +12,8 @@ Conductance 1.1925619834710743
 Precision: 0.15
 Recall: 0.26
 -----fiedler----
-Community 1:611
-Community 2:11324
+Community 1:611 motifs 485
+Community 2:11324 motifs 7298
 ------Kmeans----
 Community 1:1837
 Community 2:10096
