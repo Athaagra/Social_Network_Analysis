@@ -102,21 +102,21 @@ def get_partition(G, fv):
 #G = nx.karate_club_graph()
 G=nx.read_edgelist('cit-hep.txt', delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
 G = G.to_undirected(G)
-m = nx.linalg.modularitymatrix.modularity_matrix(G)
-no_of_vertices = m.shape[0]
-lev = leading_eigen_vector(m).getA1()
-c1 = set()
-c2 = set()
+#m = nx.linalg.modularitymatrix.modularity_matrix(G)
+#no_of_vertices = m.shape[0]
+#lev = leading_eigen_vector(m).getA1()
+#c1 = set()
+#c2 = set()
 # assigning community based on sign
-for i in range(no_of_vertices):
-		if lev[i] < 0:
-			c2.add(i+1)
-		else:
-			c1.add(i+1)
-print("Community discovery by Modularity Maximization ---- ")
-print("Community 1 :", c1)
-print("Community 2 :", c2)
-print("Size : ",len(c1), len(c2), "respectively")
+#for i in range(no_of_vertices):
+#		if lev[i] < 0:
+#			c2.add(i+1)
+#		else:
+#			c1.add(i+1)
+#print("Community discovery by Modularity Maximization ---- ")
+#print("Community 1 :", c1)
+#print("Community 2 :", c2)
+#print("Size : ",len(c1), len(c2), "respectively")
 
 def a_matrix(G, alpha):
     n_nodes = len(G.nodes())
@@ -186,7 +186,19 @@ def edge_conductance(c1,c2,G):
                 edc2+=0
     resedgecond=shared_con/min(edc1,edc2)
     return resedgecond
-
+def motifs_tre(G,pg):
+	matrixm=[]
+	for nod in range (2,len(G.nodes)):
+	    for node in range (2,len(G.nodes)):
+	        Tv=np.vstack((pg[nod-2][node-2:node+1],pg[nod-1][node-2:node+1]))
+	        Tre=np.vstack((Tv,pg[nod][node-2:node+1]))
+	        mtr=sum(sum(Tre))
+	        if mtr==6:
+	            print('motif triangle')
+	            print('This is the motif {} and node {} nod {}'.format(Tre,node-2,node-1,node,nod-2,nod-1,nod))
+	        matrixm.append([node-2,node-1,node,nod-2,nod-1,nod])
+	return matrixm
+	
 pg = a_matrix(G, 1)
 #L = nx.linalg.laplacianmatrix.laplacian_matrix(G).todense()
 adjac,degree,Lap=a_matrix(G,0)
