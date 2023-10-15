@@ -10,6 +10,7 @@ Created on Sun Oct  8 17:19:42 2023
 #that are needed in both algorithms
 import networkx as nx
 import numpy as np
+from seqeval.metrics import precision_score, recall_score, f1_score, classification_report
 
 def unit_vector(v):
     #unit vector computation
@@ -107,7 +108,7 @@ G = G.to_undirected(G)
 #lev = leading_eigen_vector(m).getA1()
 #c1 = set()
 #c2 = set()
-# assigning community based on sign
+## assigning community based on sign
 #for i in range(no_of_vertices):
 #		if lev[i] < 0:
 #			c2.add(i+1)
@@ -118,7 +119,7 @@ G = G.to_undirected(G)
 #print("Community 2 :", c2)
 #print("Size : ",len(c1), len(c2), "respectively")
 
-def a_matrix(G, alpha):
+def a_matrix(G, alpha,adja_mo,motifs=True):
     n_nodes = len(G.nodes())
     a_nodes=np.array(G.nodes())
     edges = G.edges()
@@ -147,10 +148,14 @@ def a_matrix(G, alpha):
     degree_matrix = np.zeros(shape=(n_nodes, n_nodes))
     for i in edge_su:
         degree_matrix[np.where(a_nodes==i[0]),np.where(a_nodes==i[0])]=i[1]
-    L=adj_matrix+degree_matrix
-    return adj_matrix,degree_matrix,L
+    if motifs:
+        L=adj_matrix+degree_matrix
+        return adj_matrix,degree_matrix,L
+    else:
+        L=adj_mo+degree_matrix
+        return adj_matrix,degree_matrix,L
 
-def edge_conductance(c1,c2,G):
+def edge_conductance(c1,c2):
     c1=list(c1)
     c2=list(c2)
     a_nodes=np.array(G.nodes())
@@ -164,10 +169,10 @@ def edge_conductance(c1,c2,G):
     c1_ind=np.repeat(c1_ind,len(c2))
     c1_ind=c1_ind.reshape(len(c1_ind),1)
     c1c2_ind=np.hstack((c1_ind,c2_ind))
-    for q in c1c2_ind:
-        if (a_nodes[q[0]],a_nodes[q[1]]) in ed or (a_nodes[q[1]],a_nodes[q[0]]) in ed:
+    for q in range(len(c1c2_ind)):
+        #print(c1c2_ind[q])
+        if (a_nodes[c1c2_ind[q][0]],a_nodes[c1c2_ind[q][1]]) in ed or (a_nodes[c1c2_ind[q][1]],a_nodes[c1c2_ind[q][0]]) in ed:
             shared_con+=1
-            print('edge detected')
     edc1=0
     edc2=0
     for n in range (len(c1)-1):
@@ -188,16 +193,46 @@ def edge_conductance(c1,c2,G):
     return resedgecond
 def mt_m(G,adjac):
     matrixm=[]
+    adj_m=[]
     for nod in range (2,len(G.nodes)):
         for node in range (2,len(G.nodes)-1):
             Tv=np.vstack((adjac[nod-2][node-2:node+1],adjac[nod-1][node-2:node+1]))
             Tre=np.vstack((Tv,adjac[nod][node-2:node+1]))
             mtr=sum(sum(Tre))
             if mtr==6:
-                #print('motif triangle')
+                #print(Tre[0])
+                #print(node-2,node-1,node,node+1)
+                if Tre[0][0]==1:
+                    adj_n=nod-2,node-1
+                    adj_m.append(adj_n)
+                elif Tre[0][1]==1:
+                    adj_e=nod-2,node
+                    adj_m.append(adj_n)
+                elif Tre[0][2]==1:
+                    adj_t=nod-2,node+1
+                    adj_m.append(adj_n)
+                elif Tre[1][0]==1:
+                    adj_tr=nod-2,node-1
+                    adj_m.append(adj_n)
+                elif Tre[1][1]==1:
+                    adj_f=nod-1,node
+                    adj_m.append(adj_n)
+                elif Tre[1][2]==1:
+                    adj_fe=nod-1,node+1
+                    adj_m.append(adj_n)
+                elif Tre[2][0]==1:
+                    adj_s=nod-1,node-1
+                    adj_m.append(adj_n)
+                elif Tre[2][1]==1:
+                    adj_d=nod-1,node
+                    adj_m.append(adj_n)
+                elif Tre[2][2]==1:
+                    adj_o=nod,node+1
+                    adj_m.append(adj_n)
+                 #print('motif triangle')
                 #print('This is the motif nod-2 {} and nod-1 {} nod {} and node-2 {} and node-1 {} and node {}'.format(nod-2,nod-1,nod,node-2,node-1,node))
-                matrixm.append([nod-2,nod-1,nod,node-2,node-1,node])
-    return matrixm
+                matrixm.append([nod-2,Tre[0],nod-1,Tre[1],nod,Tre[2],node-2,node-1,node])
+    return matrixm,adj_m
 
 def nu_m(G,index_motifs):
     a_node=np.array(G.nodes())
@@ -215,10 +250,24 @@ def nu_m(G,index_motifs):
            num_m=0
     return motif_n  
 
-pg = a_matrix(G, 1)
+def adj_mo(G,adj_m):
+    n_nodes=len(G.nodes())
+    adj_matrix_motifs = np.zeros(shape=(n_nodes, n_nodes))
+    for x in range (len(adj_m)):
+        adj_matrix_motifs[adj_m[x][0],adj_m[x][1]]=1
+    return adj_matrix_motifs
+
+#motifs_c1=0
+#for i in range(len(c1)-1):
+#    if a_node[c1[i]] in motif_nodes[:,0]:
+#        motifs_c1+=1
+
+
+pg = a_matrix(G, 1,0,False)
 #L = nx.linalg.laplacianmatrix.laplacian_matrix(G).todense()
-adjac,degree,Lap=a_matrix(G,0)
-index_motifs=mt_m(G,adjac)
+index_motifs,adj_m=mt_m(G,adjac)
+adj_motifs=adj_mo(G,adj_m)
+adjac,degree,Lap=a_matrix(G,0,adj_motifs,motifs=True)
 mot_n=nu_m(G,index_motifs)
 n = G.number_of_nodes()
 k_max = max(G.degree())[1]#max degree 
