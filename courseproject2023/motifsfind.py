@@ -74,7 +74,7 @@ def get_partition(G, fv):
     edges = G.edges()
     #sorting the vertices based on components of fiedler vector
     c = sorted(range(len(fv)), key=lambda k: fv[k])
-    print(c)
+    print(c[0:20])
     #partition 1
     c11 = set(i+1 for i in c[:c[0]])#pick 1st 16
     c12 = set(j+1 for j in c[c[0]:])# pick rest i.e 18
@@ -337,6 +337,9 @@ labels1 = algorithm.labels_
 centroids1 = algorithm.cluster_centers_
 pred=algorithm.predict(data_scaled)
 
+# =============================================================================
+# Communities of Model
+# =============================================================================
 com1=[]
 com2=[]
 for i in range(len(pred)):
@@ -345,13 +348,15 @@ for i in range(len(pred)):
     else:
         com2.append(i)
 
-all_nodes=np.array(G.nodes())
-c1k=[]
-c2k=[]
-for index in range(len(com1)-1):
-    c1k.append(all_nodes[com1[index]])
-for index in range(len(com2)-1):
-    c2k.append(all_nodes[com2[index]])
+def nodes_communities(community1,community2):
+    all_nodes=np.array(G.nodes())
+    c1k=[]
+    c2k=[]
+    for index in range(len(com1)-1):
+        c1k.append(all_nodes[com1[index]])
+    for index in range(len(com2)-1):
+        c2k.append(all_nodes[com2[index]])
+    return c1k,c2k
 
 def mpred(community1):        
     pred_eigen=[]
@@ -365,9 +370,27 @@ def mpred(community1):
     pred_e=np.array(pred_eigen)
     return pred_e
 
-pred_e=mpred(c1)
-pred_k=mpred(c1k)
+def motifs_e_c(comnt):
+    cmn=[]
+    totalm=0
+    for p in comnt:
+        mot=np.where(p==motif_enumer[:,0])
+        cmn.append([p,int(motif_enumer[mot][0][1])])
+        totalm+=int(motif_enumer[mot][0][1])
+    np.array(cmn)
+    print(totalm)
+    return cmn,totalm
 
+com1e,com2e =nodes_communities(c1,c2)
+com1km,com2km =nodes_communities(com1,com2)
+
+pred_e=mpred(com1e)
+pred_k=mpred(com1km)
+
+cmntE1,t_cme1=motifs_e_c(com1e)
+cmntE2,t_cme2=motifs_e_c(com2e)
+cmntK1,t_cmk1=motifs_e_c(com1km)
+cmntK2,t_cmk2=motifs_e_c(com2km)
 # =============================================================================
 # Metrics
 # =============================================================================
