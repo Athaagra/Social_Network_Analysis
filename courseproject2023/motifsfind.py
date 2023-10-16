@@ -74,12 +74,13 @@ def get_partition(G, fv):
     edges = G.edges()
     #sorting the vertices based on components of fiedler vector
     c = sorted(range(len(fv)), key=lambda k: fv[k])
+    print(c)
     #partition 1
-    c11 = set(i+1 for i in c[:c[1]])#pick 1st 16
-    c12 = set(j+1 for j in c[c[1]:])# pick rest i.e 18
+    c11 = set(i+1 for i in c[:c[0]])#pick 1st 16
+    c12 = set(j+1 for j in c[c[0]:])# pick rest i.e 18
     #partition 2
-    c21 = set(j+1 for j in c[-c[1]:])#pick last 16
-    c22 = set(j+1 for j in c[:-c[1]])#pick rest
+    c21 = set(j+1 for j in c[-c[0]:])#pick last 16
+    c22 = set(j+1 for j in c[:-c[0]])#pick rest
     # minimize cut size
     cut_size_1 = 0
     cut_size_2 = 0
@@ -119,7 +120,7 @@ G = G.to_undirected(G)
 #print("Community 2 :", c2)
 #print("Size : ",len(c1), len(c2), "respectively")
 
-def a_matrix(G, alpha,adja_mo,motifs=True):
+def a_matrix(G, alpha,adja_mo,motifs):
     n_nodes = len(G.nodes())
     a_nodes=np.array(G.nodes())
     edges = G.edges()
@@ -148,12 +149,11 @@ def a_matrix(G, alpha,adja_mo,motifs=True):
     degree_matrix = np.zeros(shape=(n_nodes, n_nodes))
     for i in edge_su:
         degree_matrix[np.where(a_nodes==i[0]),np.where(a_nodes==i[0])]=i[1]
-    if motifs:
+    if not motifs:
         L=adj_matrix+degree_matrix
-        return adj_matrix,degree_matrix,L
     else:
-        L=adj_mo+degree_matrix
-        return adj_matrix,degree_matrix,L
+        L=adja_mo+degree_matrix
+    return adj_matrix,degree_matrix,L
 
 def edge_conductance(c1,c2):
     c1=list(c1)
@@ -238,7 +238,7 @@ def nu_m(G,index_motifs):
     a_node=np.array(G.nodes())
     motif_nodes=[]
     for i in index_motifs:
-        motif_nodes.append([a_node[i[0]],a_node[i[1]],a_node[i[2]]])
+        motif_nodes.append([a_node[i[0]],a_node[i[2]],a_node[i[4]]])
     
     num_m=0
     motif_n=[]
@@ -261,15 +261,14 @@ def adj_mo(G,adj_m):
 #for i in range(len(c1)-1):
 #    if a_node[c1[i]] in motif_nodes[:,0]:
 #        motifs_c1+=1
-
-
-pg = a_matrix(G, 1,0,False)
+n = G.number_of_nodes()
+#adj_n = np.zeros(shape=(n, n))
+adjac,_,_ = a_matrix(G, 1,0,motifs=False)
 #L = nx.linalg.laplacianmatrix.laplacian_matrix(G).todense()
 index_motifs,adj_m=mt_m(G,adjac)
 adj_motifs=adj_mo(G,adj_m)
 adjac,degree,Lap=a_matrix(G,0,adj_motifs,motifs=True)
 mot_n=nu_m(G,index_motifs)
-n = G.number_of_nodes()
 k_max = max(G.degree())[1]#max degree 
 I = np.matrix(np.identity(n))
 m = (2 * k_max * I) - Lap
@@ -277,33 +276,51 @@ lev = leading_eigen_vector(m)
 fv = eigenVec_2nd_smallest_eigenVal(lev, m)
 #print(fv)
 c1, c2 = get_partition(G, fv)
-conductance=edge_conductance(c1, c2,G)
+conductance=edge_conductance(c1, c2)
 print("Spectral partitioning using Fiedler vector -----")
 print("\n......Own implementation.......")
 print("Community 1 : ", c1)
 print("Community 2 : ", c2)
 print("Size : ",len(c1), " and ", len(c2), "respectively")
 print("Conductance {}".format(conductance))
-#same thing using library function
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
+def motif_enum(mot_n,G):
+    nodes_motifs=[]
+    for i in range(len(mot_n)):
+        for x in range(len(mot_n[i][0])):
+            nodes_motifs.append([mot_n[i][0][x],mot_n[i][1]])
+    nodes_motifs=np.array(nodes_motifs)
+    motifs_num=[]
+    for ino in G.nodes():
+        dupl=np.where(ino==nodes_motifs)
+        c=0
+        if len(dupl[0]) > 0:
+            for dup in dupl[0]:
+                c+=int(nodes_motifs[dup][0][1])
+        motifs_num.append([ino,c])
+    motifs_num=np.array(motifs_num)
+    return motifs_num
 # reading the data and looking at the first five rows of the data
-def km_feat(G,lev):
+def km_feat(G,motif_numer):
     import pandas as pd
     all_nodes=np.array(G.nodes())
     features=[]
     for node in range(len(all_nodes)):
         edges=len(list(G.neighbors(all_nodes[node])))
-        features.append([edges,np.array(lev[node])[0][0]])
+        ettm=np.where(all_nodes[node]==motif_numer)
+        features.append([edges,int(motif_numer[ettm[0]][0][1])])
     features=np.array(features)
     datan=pd.DataFrame(features)
     datan.head()
     return datan
-data=km_feat(G,lev) 
+
+motif_enumer=motif_enum(mot_n,G)
+data=km_feat(G,motif_enumer) 
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 data_scaled = scaler.fit_transform(data)
@@ -313,7 +330,7 @@ pd.DataFrame(data_scaled).describe()
 
 
 # defining the kmeans function with initialization as k-means++
-algorithm = (KMeans(n_clusters = 3 ,init='k-means++', n_init = 10 ,max_iter=300, 
+algorithm = (KMeans(n_clusters = 2 ,init='k-means++', n_init = 10 ,max_iter=300, 
                         tol=0.0001,  random_state= 111  , algorithm='elkan') )
 algorithm.fit(data_scaled)
 labels1 = algorithm.labels_
@@ -351,7 +368,9 @@ def mpred(community1):
 pred_e=mpred(c1)
 pred_k=mpred(c1k)
 
-
+# =============================================================================
+# Metrics
+# =============================================================================
 
 tp=0
 tn=0
@@ -377,3 +396,4 @@ print('support: {}'.format(support))
 from sklearn.metrics import classification_report, confusion_matrix
 print(confusion_matrix(pred_e,pred_k))
 print(classification_report(pred_e,pred_k))
+
