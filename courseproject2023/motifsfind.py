@@ -274,10 +274,10 @@ def nodes_communities(community1,community2):
     all_nodes=np.array(G.nodes())
     c1k=[]
     c2k=[]
-    for index in range(len(com1)-1):
-        c1k.append(all_nodes[com1[index]])
-    for index in range(len(com2)-1):
-        c2k.append(all_nodes[com2[index]])
+    for index in range(len(community1)-1):
+        c1k.append(all_nodes[community1[index]])
+    for index in range(len(community2)-1):
+        c2k.append(all_nodes[community2[index]])
     return c1k,c2k
 
 def mpred(community1):        
@@ -380,4 +380,3 @@ print('fscore: {}'.format(fscore))
 print('support: {}'.format(support))
 print(confusion_matrix(pred_e,pred_k))
 print(classification_report(pred_e,pred_k))
-
