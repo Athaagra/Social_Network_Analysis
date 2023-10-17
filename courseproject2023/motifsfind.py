@@ -11,6 +11,13 @@ Created on Sun Oct  8 17:19:42 2023
 import networkx as nx
 import numpy as np
 from seqeval.metrics import precision_score, recall_score, f1_score, classification_report
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.metrics import precision_recall_fscore_support as score
+from sklearn.metrics import classification_report, confusion_matrix
 
 def unit_vector(v):
     #unit vector computation
@@ -97,29 +104,6 @@ def get_partition(G, fv):
     else: 
         return c21, c22
     
-    
-#n = 1000  # 1000 nodes
-#m = 5000  # 5000 edges
-#G = nx.gnm_random_graph(n, m)
-#G = nx.karate_club_graph()
-G=nx.read_edgelist('cit-hep.txt', delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
-G = G.to_undirected(G)
-#m = nx.linalg.modularitymatrix.modularity_matrix(G)
-#no_of_vertices = m.shape[0]
-#lev = leading_eigen_vector(m).getA1()
-#c1 = set()
-#c2 = set()
-## assigning community based on sign
-#for i in range(no_of_vertices):
-#		if lev[i] < 0:
-#			c2.add(i+1)
-#		else:
-#			c1.add(i+1)
-#print("Community discovery by Modularity Maximization ---- ")
-#print("Community 1 :", c1)
-#print("Community 2 :", c2)
-#print("Size : ",len(c1), len(c2), "respectively")
-
 def a_matrix(G, alpha,adja_mo,motifs):
     n_nodes = len(G.nodes())
     a_nodes=np.array(G.nodes())
@@ -171,7 +155,7 @@ def edge_conductance(c1,c2):
     c1c2_ind=np.hstack((c1_ind,c2_ind))
     for q in range(len(c1c2_ind)):
         #print(c1c2_ind[q])
-        if (a_nodes[c1c2_ind[q][0]],a_nodes[c1c2_ind[q][1]]) in ed or (a_nodes[c1c2_ind[q][1]],a_nodes[c1c2_ind[q][0]]) in ed:
+        if (a_nodes[c1[c1c2_ind[q][0]]],a_nodes[c2[c1c2_ind[q][1]]]) in ed or (a_nodes[c1[c1c2_ind[q][1]]],a_nodes[c2[c1c2_ind[q][0]]]) in ed:
             shared_con+=1
     edc1=0
     edc2=0
@@ -257,38 +241,6 @@ def adj_mo(G,adj_m):
         adj_matrix_motifs[adj_m[x][0],adj_m[x][1]]=1
     return adj_matrix_motifs
 
-#motifs_c1=0
-#for i in range(len(c1)-1):
-#    if a_node[c1[i]] in motif_nodes[:,0]:
-#        motifs_c1+=1
-n = G.number_of_nodes()
-#adj_n = np.zeros(shape=(n, n))
-adjac,_,_ = a_matrix(G, 1,0,motifs=False)
-#L = nx.linalg.laplacianmatrix.laplacian_matrix(G).todense()
-index_motifs,adj_m=mt_m(G,adjac)
-adj_motifs=adj_mo(G,adj_m)
-adjac,degree,Lap=a_matrix(G,0,adj_motifs,motifs=True)
-mot_n=nu_m(G,index_motifs)
-k_max = max(G.degree())[1]#max degree 
-I = np.matrix(np.identity(n))
-m = (2 * k_max * I) - Lap
-lev = leading_eigen_vector(m)
-fv = eigenVec_2nd_smallest_eigenVal(lev, m)
-#print(fv)
-c1, c2 = get_partition(G, fv)
-conductance=edge_conductance(c1, c2)
-print("Spectral partitioning using Fiedler vector -----")
-print("\n......Own implementation.......")
-print("Community 1 : ", c1)
-print("Community 2 : ", c2)
-print("Size : ",len(c1), " and ", len(c2), "respectively")
-print("Conductance {}".format(conductance))
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans
-
 def motif_enum(mot_n,G):
     nodes_motifs=[]
     for i in range(len(mot_n)):
@@ -318,36 +270,6 @@ def km_feat(G,motif_numer):
     datan=pd.DataFrame(features)
     datan.head()
     return datan
-
-motif_enumer=motif_enum(mot_n,G)
-data=km_feat(G,motif_enumer) 
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-data_scaled = scaler.fit_transform(data)
-
-# statistics of scaled data
-pd.DataFrame(data_scaled).describe()
-
-
-# defining the kmeans function with initialization as k-means++
-algorithm = (KMeans(n_clusters = 2 ,init='k-means++', n_init = 10 ,max_iter=300, 
-                        tol=0.0001,  random_state= 111  , algorithm='elkan') )
-algorithm.fit(data_scaled)
-labels1 = algorithm.labels_
-centroids1 = algorithm.cluster_centers_
-pred=algorithm.predict(data_scaled)
-
-# =============================================================================
-# Communities of Model
-# =============================================================================
-com1=[]
-com2=[]
-for i in range(len(pred)):
-    if pred[i]==0:
-        com1.append(i)
-    else:
-        com2.append(i)
-
 def nodes_communities(community1,community2):
     all_nodes=np.array(G.nodes())
     c1k=[]
@@ -378,12 +300,59 @@ def motifs_e_c(comnt):
         cmn.append([p,int(motif_enumer[mot][0][1])])
         totalm+=int(motif_enumer[mot][0][1])
     np.array(cmn)
-    print(totalm)
+    print('Number of Motifs : {}'.format(totalm))
     return cmn,totalm
 
+
+G=nx.read_edgelist('cit-hep.txt', delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
+G = G.to_undirected(G)
+n = G.number_of_nodes()
+adjac,_,_ = a_matrix(G, 1,0,motifs=False)
+index_motifs,adj_m=mt_m(G,adjac)
+adj_motifs=adj_mo(G,adj_m)
+adjac,degree,Lap=a_matrix(G,0,adj_motifs,motifs=True)
+mot_n=nu_m(G,index_motifs)
+k_max = max(G.degree())[1]#max degree 
+I = np.matrix(np.identity(n))
+m = (2 * k_max * I) - Lap
+lev = leading_eigen_vector(m)
+fv = eigenVec_2nd_smallest_eigenVal(lev, m)
+c1, c2 = get_partition(G, fv)
+conductance=edge_conductance(c1, c2)
+print("Spectral partitioning using Fiedler vector -----")
+print("\n......Own implementation.......")
+print("Community 1 : ", c1)
+print("Community 2 : ", c2)
+print("Size : ",len(c1), " and ", len(c2), "respectively")
+print("Conductance {} eigenvectors of Motifs".format(conductance))
+motif_enumer=motif_enum(mot_n,G)
+data=km_feat(G,motif_enumer) 
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(data)
+# statistics of scaled data
+pd.DataFrame(data_scaled).describe()
+# defining the kmeans function with initialization as k-means++
+algorithm = (KMeans(n_clusters = 2 ,init='k-means++', n_init = 10 ,max_iter=300, 
+                        tol=0.0001,  random_state= 111  , algorithm='elkan') )
+algorithm.fit(data_scaled)
+labels1 = algorithm.labels_
+centroids1 = algorithm.cluster_centers_
+pred=algorithm.predict(data_scaled)
+
+# =============================================================================
+# Communities of Model
+# =============================================================================
+com1=[]
+com2=[]
+for i in range(len(pred)):
+    if pred[i]==0:
+        com1.append(i)
+    else:
+        com2.append(i)
+conductanceKmeans=edge_conductance(com1, com2)        
 com1e,com2e =nodes_communities(c1,c2)
 com1km,com2km =nodes_communities(com1,com2)
-
+print("Conductance {} K-means of Motifs".format(conductanceKmeans))
 pred_e=mpred(com1e)
 pred_k=mpred(com1km)
 
@@ -404,19 +373,11 @@ for i in range(len(pred_e)):
         tn+=1
 precision=tp/(tp+tn)
 print('This is precision {}'.format(precision))
-
-#print('tp {} tn {} fp {} fn {}'.format(tp,tn,fp,fn))
-
-
-from sklearn.metrics import precision_recall_fscore_support as score
 precision, recall, fscore, support = score(pred_e, pred_k)
-
 print('precision: {}'.format(precision))
 print('recall: {}'.format(recall))
 print('fscore: {}'.format(fscore))
 print('support: {}'.format(support))
-
-from sklearn.metrics import classification_report, confusion_matrix
 print(confusion_matrix(pred_e,pred_k))
 print(classification_report(pred_e,pred_k))
 
