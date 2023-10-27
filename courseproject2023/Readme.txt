@@ -24,13 +24,17 @@ Cit-Hept (-- hours proccessing more previous approach)
 24  and  11911 respectively
 Conductance fiedler:0.9988038277511961
 Conductance k-means:1.5364200126129914
-Precision: --
-Recall: --
+Precision: 0.009, 0.996653
+Recall: 0.30, 0.39
 -----fiedler----
-Community 1:--
-Community 2:--
+Community 1:23
+Community 2:11910
 ------Kmeans----
-Community 1:--
-Community 2:--
+Community 1:7154
+Community 2:4779
+
+-------
+new dataset!
+-------
 
 
