@@ -8,6 +8,9 @@ Created on Sun Oct  8 17:19:42 2023
 
 #Implementation of some common vector operations
 #that are needed in both algorithms
+import sys 
+stdoutOrigin=sys.stdout 
+sys.stdout = open("log1.txt", "w")
 import networkx as nx
 import numpy as np
 from seqeval.metrics import precision_score, recall_score, f1_score, classification_report
@@ -153,10 +156,12 @@ def edge_conductance(c1,c2):
     c1_ind=np.repeat(c1_ind,len(c2)-1)
     c1_ind=c1_ind.reshape(len(c1_ind),1)
     c1c2_ind=np.hstack((c1_ind,c2_ind))
+    ed_cond_nodes=[]
     for q in c1c2_ind:
         #print(c1c2_ind[q])
         if (a_nodes[c1[q[0]]],a_nodes[c2[q[1]]]) in ed or (a_nodes[c2[q[1]]],a_nodes[c1[q[0]]]) in ed:
             shared_con+=1
+            ed_cond_nodes.append([a_nodes[c1[q[0]]],a_nodes[c2[q[1]]]])
     edc1=0
     edc2=0
     for n in range (len(c1)-1):
@@ -174,7 +179,7 @@ def edge_conductance(c1,c2):
             else:
                 edc2+=0
     resedgecond=shared_con/min(edc1,edc2)
-    return resedgecond
+    return resedgecond,shared_con,ed_cond_nodes
 def mt_m(G,adjac):
     matrixm=[]
     adj_m=[]
@@ -191,28 +196,28 @@ def mt_m(G,adjac):
                     adj_m.append(adj_n)
                 elif Tre[0][1]==1:
                     adj_e=nod-2,node
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_e)
                 elif Tre[0][2]==1:
                     adj_t=nod-2,node+1
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_t)
                 elif Tre[1][0]==1:
                     adj_tr=nod-2,node-1
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_tr)
                 elif Tre[1][1]==1:
                     adj_f=nod-1,node
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_f)
                 elif Tre[1][2]==1:
                     adj_fe=nod-1,node+1
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_fe)
                 elif Tre[2][0]==1:
                     adj_s=nod-1,node-1
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_s)
                 elif Tre[2][1]==1:
                     adj_d=nod-1,node
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_d)
                 elif Tre[2][2]==1:
                     adj_o=nod,node+1
-                    adj_m.append(adj_n)
+                    adj_m.append(adj_o)
                  #print('motif triangle')
                 #print('This is the motif nod-2 {} and nod-1 {} nod {} and node-2 {} and node-1 {} and node {}'.format(nod-2,nod-1,nod,node-2,node-1,node))
                 matrixm.append([nod-2,Tre[0],nod-1,Tre[1],nod,Tre[2],node-2,node-1,node])
@@ -304,7 +309,7 @@ def motifs_e_c(comnt):
     return cmn,totalm
 
 
-G=nx.read_edgelist('cit-hep.txt', delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
+G=nx.read_edgelist('deezer.txt', delimiter='\t',create_using=nx.DiGraph(),data=[('weight',int),('Timestamp',str)])
 G = G.to_undirected(G)
 n = G.number_of_nodes()
 adjac,_,_ = a_matrix(G, 1,0,motifs=False)
@@ -318,7 +323,7 @@ m = (2 * k_max * I) - Lap
 lev = leading_eigen_vector(m)
 fv = eigenVec_2nd_smallest_eigenVal(lev, m)
 c1, c2 = get_partition(G, fv)
-conductance=edge_conductance(c1, c2)
+conductance,num_edges_clusters,shared_nodes=edge_conductance(c1, c2)
 print("Spectral partitioning using Fiedler vector -----")
 print("\n......Own implementation.......")
 print("Community 1 : ", c1)
@@ -349,7 +354,9 @@ for i in range(len(pred)):
         com1.append(i)
     else:
         com2.append(i)
-conductanceKmeans=edge_conductance(com1, com2)        
+conductanceKmeans,num_edges_clusters-Kmeans,shared_nodesKmeans=edge_conductance(com1, com2) 
+c1=list(c1)
+c2=list(c2)       
 com1e,com2e =nodes_communities(c1,c2)
 com1km,com2km =nodes_communities(com1,com2)
 print("Conductance {} K-means of Motifs".format(conductanceKmeans))
@@ -380,3 +387,5 @@ print('fscore: {}'.format(fscore))
 print('support: {}'.format(support))
 print(confusion_matrix(pred_e,pred_k))
 print(classification_report(pred_e,pred_k))
+sys.stdout.close()
+sys.stdout=stdoutOrigin
